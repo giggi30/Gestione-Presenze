@@ -209,6 +209,19 @@ GET     /attendances/course/{courseId}/attendance-average
 - `User_Roles_Management`: verifica studenti/docenti e ruoli.
 - `Report_Management`: riceve le statistiche sulle percentuali delle presenze di un singolo studente ad un corso e la media delle presenze totali ad un corso.
 
+---
+
+### RabbitMQ - Published Events
+- `attendance.created`: Quando viene registrata una nuova presenza
+- `attendance.updated`: Quando una presenza viene modificata (es. da assente a presente)
+- `attendance.deleted`: Quando una presenza viene eliminata
+- `attendance.stats.generated`: Quando viene calcolata una statistica (percentuale o media) per il servizio Report
+
+### RabbitMQ - Consumed Events
+- `course.scheduled`: Per sincronizzare le date delle lezioni dai corsi appena creati
+- `course.updated`: Per aggiornare o invalidare presenze dopo modifiche al corso
+- `user.deleted`: Per eliminare automaticamente le presenze legate a uno studente rimosso
+- `report.requested`: Per generare e inviare la statistica di presenze richiesta dal microservizio Report
 
 ---
 
