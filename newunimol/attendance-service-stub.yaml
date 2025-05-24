@@ -1,0 +1,179 @@
+
+openapi: 3.0.1
+info:
+  title: Attendance Management Microservice API
+  version: 1.0.0
+  description: API per la gestione delle presenze all'interno del sistema NewUnimol.
+
+paths:
+  /attendances:
+    post:
+      summary: Crea nuova presenza
+      operationId: createAttendance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceDTO'
+      responses:
+        '201':
+          description: Presenza creata
+        '400':
+          description: Dati non validi
+
+  /attendances/{attendanceId}:
+    put:
+      summary: Modifica presenza esistente
+      operationId: updateAttendance
+      parameters:
+        - name: attendanceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceUpdateDTO'
+      responses:
+        '200':
+          description: Presenza aggiornata
+    delete:
+      summary: Elimina una presenza
+      operationId: deleteAttendance
+      parameters:
+        - name: attendanceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Presenza eliminata
+
+  /attendances/student/{studentId}:
+    get:
+      summary: Visualizza presenze per studente
+      operationId: getAttendancesByStudent
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista delle presenze
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttendanceDTO'
+
+  /attendances/course/{courseId}:
+    get:
+      summary: Visualizza presenze per corso
+      operationId: getAttendancesByCourse
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista delle presenze
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttendanceDTO'
+
+  /attendances/student/{studentId}/course/{courseId}/attendance-percentage:
+    get:
+      summary: Percentuale presenze studente per corso
+      operationId: getStudentAttendancePercentageForCourse
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Statistiche presenze
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceStatsDTO'
+
+  /attendances/course/{courseId}/attendance-average:
+    get:
+      summary: Media presenze studenti per corso
+      operationId: getAverageAttendanceForCourse
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Media presenze
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseAttendanceStatsDTO'
+
+components:
+  schemas:
+    AttendanceDTO:
+      type: object
+      properties:
+        attendanceId:
+          type: string
+        studentId:
+          type: string
+        courseId:
+          type: string
+        lessonDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [present, absent]
+
+    AttendanceUpdateDTO:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [present, absent]
+
+    AttendanceStatsDTO:
+      type: object
+      properties:
+        totalCourseLessons:
+          type: number
+        presentLessons:
+          type: number
+        attendancePercentage:
+          type: number
+
+    CourseAttendanceStatsDTO:
+      type: object
+      properties:
+        totalLessons:
+          type: number
+        averagePresencesPerLesson:
+          type: number
