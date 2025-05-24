@@ -2,7 +2,7 @@
 
 ## Descrizione
 
-Questo microservizio si occupa della registrazione, modifica, visualizzazione e analisi delle presenze degli studenti alle lezioni universitarie. È parte del sistema distribuito "NewUnimol" e comunica con altri microservizi come CourseService e UserService.
+Questo microservizio si occupa della registrazione, modifica, visualizzazione e analisi delle presenze degli studenti alle lezioni universitarie. È parte del sistema distribuito "NewUnimol" e comunica con altri microservizi come Course_Management, User_Roles_Management e Report_Management.
 
 ---
 
@@ -10,9 +10,9 @@ Questo microservizio si occupa della registrazione, modifica, visualizzazione e 
 
 - Registrazione delle presenze degli studenti alle lezioni
 - Modifica dello stato di presenza (presente/assente)
-- Eliminazione delle registrazioni di presenza
-- Visualizzazione delle presenze per studente
-- Visualizzazione delle presenze per corso
+- Eliminazione delle registrazioni di presenze
+- Visualizzazione delle presenze di un singolo studente
+- Visualizzazione delle presenze di uno studente durante un corso
 - Calcolo della percentuale di presenze per studente in un corso
 - Calcolo della media delle presenze per corso
 - Integrazione con altri microservizi per la validazione dei dati
@@ -49,91 +49,146 @@ Questo microservizio si occupa della registrazione, modifica, visualizzazione e 
 - Indice composito su `(studentId, courseId, lessonDate)`
 
 ---
+## DTO
+DataTransferObject presenti nel microservizio.
 
-## Endpoints
+### DTO Presenza
 
-### 1. Registrazione Presenza
-
-- **Metodo:** `POST`
-- **Endpoint:** `/attendances`
-- **Descrizione:** Registra una nuova presenza.
-- **Request Body:**
-```json
-{
-  "studentId": "string",
-  "courseId": "string",
-  "lessonDate": "YYYY-MM-DD",
-  "status": "present" | "absent"
+```java
+#############################################
+# AttendanceDTO
+# @desc: DTO per rappresentare una presenza
+#############################################
+public class AttendanceDTO {
+    private String attendanceId;
+    private String studentId;
+    private String courseId;
+    private LocalDate lessonDate;
+    private String status; // "present" o "absent"
 }
+```
+
+### DTO aggiorna Presenza
+```java
+#############################################
+# AttendanceUpdateDTO
+# @desc: DTO per aggiornare lo stato di una presenza
+#############################################
+public class AttendanceUpdateDTO {
+    private String status; // "present" o "absent"
+}
+```
+
+### DTO percentuale Presenze
+```java
+#############################################
+# AttendanceStatsDTO
+# @desc: DTO per il calcolo della percentuale di presenze
+#############################################
+public class AttendanceStatsDTO {
+    private double totalCourseLessons;
+    private double presentLessons;
+    private double attendancePercentage;
+}
+```
+
+### DTO media Presenze
+```java
+#############################################
+# CourseAttendanceStatsDTO
+# @desc: DTO per la media delle presenze in un corso
+#############################################
+public class CourseAttendanceStatsDTO {
+    private double totalLessons;
+    private double averagePresencesPerLesson;
+}
+```
+---
+
+## API REST
+
+### ATTENDANCES ENDPOINTS
+```bash
+#############################################
+# Crea nuova presenza
+# @func: createAttendance()
+# @param: AttendanceDTO attendanceDTO
+# @return: ResponseEntity<Void>
+#############################################
+POST    /attendances
 ```
 
 ---
 
-### 2. Modifica Presenza
-
-- **Metodo:** `PUT`
-- **Endpoint:** `/attendances/{attendanceId}`
-- **Descrizione:** Modifica lo stato di una presenza esistente.
-- **Request Body:**
-```json
-{
-  "status": "present" | "absent"
-}
+```bash
+#############################################
+# Modifica presenza esistente
+# @func: updateAttendance()
+# @param: String attendanceId
+# @param: AttendanceUpdateDTO updateDTO
+# @return: ResponseEntity<Void>
+#############################################
+PUT     /attendances/{attendanceId}
 ```
 
 ---
 
-### 3. Eliminazione Presenza
-
-- **Metodo:** `DELETE`
-- **Endpoint:** `/attendances/{attendanceId}`
-- **Descrizione:** Elimina una registrazione di presenza.
-
----
-
-### 4. Visualizzazione Presenze di uno Studente
-
-- **Metodo:** `GET`
-- **Endpoint:** `/attendances/student/{studentId}`
-- **Descrizione:** Restituisce tutte le presenze di uno studente.
-
----
-
-### 5. Visualizzazione Presenze per Corso
-
-- **Metodo:** `GET`
-- **Endpoint:** `/attendances/course/{courseId}`
-- **Descrizione:** Restituisce tutte le presenze per un corso.
-
----
-
-### 6. Percentuale presenze di uno studente per un corso
-
-- **Metodo:** `GET`
-- **Endpoint:** `/attendances/student/{studentId}/course/{courseId}/attendance-percentage`
-- **Descrizione:** Calcola la percentuale di presenze dello studente in un corso.
-- **Response:**
-```json
-{
-  "totalCourseLessons": "number",
-  "presentLessons": "number",
-  "attendancePercentage": "number"
-}
+```bash
+#############################################
+# Elimina una presenza
+# @func: deleteAttendance()
+# @param: String attendanceId
+# @return: ResponseEntity<Void>
+#############################################
+DELETE  /attendances/{attendanceId}
 ```
 
 ---
 
-### 7. Media delle presenze di tutti gli studenti a un corso
+```bash
+#############################################
+# Visualizza presenze per studente
+# @func: getAttendancesByStudent()
+# @param: String studentId
+# @return: ResponseEntity<List<AttendanceDTO>>
+#############################################
+GET     /attendances/student/{studentId}
+```
 
-- **Metodo:** `GET`
-- **Endpoint:** `/attendances/course/{courseId}/attendance-average`
-- **Descrizione:** Calcola la media delle presenze degli studenti per ogni lezione del corso.
-- **Response:**
-```json
-{
-  "totalLessons": "number",
-  "averagePresencesPerLesson": "number"
-}
+---
+
+```bash
+#############################################
+# Visualizza presenze per corso
+# @func: getAttendancesByCourse()
+# @param: String courseId
+# @return: ResponseEntity<List<AttendanceDTO>>
+#############################################
+GET     /attendances/course/{courseId}
+```
+
+---
+
+```bash
+#############################################
+# Percentuale presenze studente per corso
+# @func: getStudentAttendancePercentageForCourse()
+# @param: String studentId, String courseId
+# @return: ResponseEntity<AttendanceStatsDTO>
+#############################################
+GET     /attendances/student/{studentId}/course/{courseId}/attendance-percentage
+```
+
+---
+
+```bash
+#############################################
+# Media presenze studenti per corso
+# @func: getAverageAttendanceForCourse()
+# @param: String courseId
+# @return: ResponseEntity<CourseAttendanceStatsDTO>
+#############################################
+GET     /attendances/course/{courseId}/attendance-average
 ```
 
 ---
