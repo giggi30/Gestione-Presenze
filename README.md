@@ -2,7 +2,7 @@
 
 ## Descrizione
 
-Questo microservizio si occupa della registrazione, modifica, visualizzazione e analisi delle presenze degli studenti alle lezioni universitarie. È parte del sistema distribuito "NewUnimol" e comunica con altri microservizi come Course_Management, User_Roles_Management e Report_Management. Si può visionare il Progetto tramite Swagger scaricando il file 'attendance-management-stub-v1.yaml', importandolo nel sito [SwaggerEditor] (https://editor.swagger.io/).
+Questo microservizio si occupa della registrazione, modifica, visualizzazione e analisi delle presenze degli studenti alle lezioni universitarie. È parte del sistema distribuito "NewUnimol" e comunica con altri microservizi come Course_Management, User_Roles_Management e Report_Management. Si può visionare il Progetto tramite Swagger scaricando il file 'attendance-management-api.yaml', importandolo nel sito [SwaggerEditor] (https://editor.swagger.io/).
 
 ---
 
