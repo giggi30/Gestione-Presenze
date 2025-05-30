@@ -15,8 +15,6 @@ Questo microservizio si occupa della registrazione, modifica, visualizzazione e 
 - Visualizzazione delle presenze di uno studente durante un corso
 - Calcolo della percentuale di presenze per studente in un corso
 - Calcolo della media delle presenze per corso
-- Integrazione con altri microservizi per la validazione dei dati
-- Gestione delle autorizzazioni basata sui ruoli
 
 ---
 
