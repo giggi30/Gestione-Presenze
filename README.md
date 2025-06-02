@@ -38,6 +38,8 @@ Questo microservizio si occupa della registrazione, modifica, visualizzazione e 
 | studentId | String | ID dello studente | FOREIGN KEY, NOT NULL |
 | courseId | String | ID del corso | FOREIGN KEY, NOT NULL |
 | lessonDate | LocalDate | Data della lezione | NOT NULL |
+| orarioIngresso | LocalDate | Orario d'ingresso |
+| orarioUscita | LocalDate | Orario d'uscita |
 | status | String | Stato della presenza (present/absent) | NOT NULL |
 
 **Indici:**
@@ -62,43 +64,38 @@ public class AttendanceDTO {
     private String studentId;
     private String courseId;
     private LocalDate lessonDate;
-    private String status; // "present" o "absent"
+    private String status;
+    private LocalTime orarioIngresso;
+    private LocalTime orarioUscita;
 }
 ```
 
-### DTO aggiorna Presenza
+### DTO crea Presenza
+```java
+#############################################
+# AttendanceCreateDTO
+# @desc: DTO per registrare una presenza
+#############################################
+public class AttendanceCreateDTO {
+    private String studentId;
+    private String courseId;
+    private LocalDate lessonDate;
+    private String status;
+    private LocalTime orarioIngresso;
+    private LocalTime orarioUscita;
+}
+```
+
+### DTO modifica Presenze
 ```java
 #############################################
 # AttendanceUpdateDTO
-# @desc: DTO per aggiornare lo stato di una presenza
+# @desc: DTO per la modifica di una presenza
 #############################################
 public class AttendanceUpdateDTO {
-    private String status; // "present" o "absent"
-}
-```
-
-### DTO percentuale Presenze
-```java
-#############################################
-# AttendanceStatsDTO
-# @desc: DTO per il calcolo della percentuale di presenze
-#############################################
-public class AttendanceStatsDTO {
-    private double totalCourseLessons;
-    private double presentLessons;
-    private double attendancePercentage;
-}
-```
-
-### DTO media Presenze
-```java
-#############################################
-# CourseAttendanceStatsDTO
-# @desc: DTO per la media delle presenze in un corso
-#############################################
-public class CourseAttendanceStatsDTO {
-    private double totalLessons;
-    private double averagePresencesPerLesson;
+    private String status;
+    private LocalTime orarioIngresso;
+    private LocalTime orarioUscita;
 }
 ```
 ---
