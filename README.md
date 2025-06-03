@@ -110,7 +110,7 @@ public class AttendanceUpdateDTO {
 # @param: AttendanceDTO attendanceDTO
 # @return: ResponseEntity<Void>
 #############################################
-POST    /attendances
+POST    api/attendances
 ```
 
 ---
@@ -123,7 +123,7 @@ POST    /attendances
 # @param: AttendanceUpdateDTO updateDTO
 # @return: ResponseEntity<Void>
 #############################################
-PUT     /attendances/{attendanceId}
+PUT     api/attendances/{attendanceId}
 ```
 
 ---
@@ -135,7 +135,18 @@ PUT     /attendances/{attendanceId}
 # @param: String attendanceId
 # @return: ResponseEntity<Void>
 #############################################
-DELETE  /attendances/{attendanceId}
+DELETE  api/attendances/{attendanceId}
+```
+
+---
+```bash
+#############################################
+# Visualizza una presenza tramite ID
+# @func: getAttendanceById()
+# @param: String attendanceId (path)
+# @return: AttendanceDTO
+#############################################
+GET     api/getAttendance/{attendanceId}
 ```
 
 ---
@@ -147,7 +158,7 @@ DELETE  /attendances/{attendanceId}
 # @param: String studentId
 # @return: ResponseEntity<List<AttendanceDTO>>
 #############################################
-GET     /attendances/student/{studentId}
+GET     api/attendances/student/{studentId}
 ```
 
 ---
@@ -159,7 +170,7 @@ GET     /attendances/student/{studentId}
 # @param: String courseId
 # @return: ResponseEntity<List<AttendanceDTO>>
 #############################################
-GET     /attendances/course/{courseId}
+GET     api/attendances/course/{courseId}
 ```
 
 ---
@@ -171,7 +182,7 @@ GET     /attendances/course/{courseId}
 # @param: String studentId, String courseId
 # @return: ResponseEntity<AttendanceStatsDTO>
 #############################################
-GET     /attendances/student/{studentId}/course/{courseId}/attendance-percentage
+GET     api/attendances/student/{studentId}/course/{courseId}/attendance-percentage
 ```
 
 ---
@@ -183,7 +194,7 @@ GET     /attendances/student/{studentId}/course/{courseId}/attendance-percentage
 # @param: String courseId
 # @return: ResponseEntity<CourseAttendanceStatsDTO>
 #############################################
-GET     /attendances/course/{courseId}/attendance-average
+GET     api/attendances/course/{courseId}/attendance-average
 ```
 
 ---
