@@ -238,7 +238,32 @@ components:
         - lessonDate
         - status
         - orarioIngresso
-      description: "orarioUscita non va passato in creazione, viene valorizzato solo in aggiornamento."
+
+    AttendanceCreateDTO:
+      type: object
+      properties:
+        studentId:
+          type: string
+        courseId:
+          type: string
+        lessonDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [present, absent]
+        orarioIngresso:
+          type: string
+          format: time
+        orarioUscita:
+          type: string
+          format: time
+      required:
+        - studentId
+        - courseId
+        - lessonDate
+        - status
+        - orarioIngresso
 
     AttendanceUpdateDTO:
       type: object
@@ -252,21 +277,3 @@ components:
         orarioUscita:
           type: string
           format: time
-
-    AttendanceStatsDTO:
-      type: object
-      properties:
-        totalCourseLessons:
-          type: number
-        presentLessons:
-          type: number
-        attendancePercentage:
-          type: number
-
-    CourseAttendanceStatsDTO:
-      type: object
-      properties:
-        totalLessons:
-          type: number
-        averagePresencesPerLesson:
-          type: number
