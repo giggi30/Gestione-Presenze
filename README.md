@@ -217,17 +217,73 @@ GET     api/attendances/course/{courseId}/attendance-average
 
 ---
 
-### RabbitMQ - Published Events
-- `attendance.created`: Quando viene registrata una nuova presenza
-- `attendance.updated`: Quando una presenza viene modificata (es. da assente a presente)
-- `attendance.deleted`: Quando una presenza viene eliminata
-- `attendance.stats.generated`: Quando viene calcolata una statistica (percentuale o media) per il servizio Report
+## RabbitMQ - Event Driven Communication
 
-### RabbitMQ - Consumed Events
-- `course.scheduled`: Per sincronizzare le date delle lezioni dai corsi appena creati
-- `course.updated`: Per aggiornare o invalidare presenze dopo modifiche al corso
-- `user.deleted`: Per eliminare automaticamente le presenze legate a uno studente rimosso
-- `report.requested`: Per generare e inviare la statistica di presenze richiesta dal microservizio Report
+### Descrizione
+
+Il microservizio Attendance Management utilizza RabbitMQ come message broker per la comunicazione asincrona con gli altri microservizi del sistema NewUnimol. Questo approccio consente di disaccoppiare i servizi, migliorare la scalabilità e garantire la resilienza del sistema tramite la gestione di eventi.
+
+### Eventi Pubblicati (Published Events)
+
+- **attendance.created**: Quando viene registrata una nuova presenza.
+- **attendance.updated**: Quando una presenza viene modificata (es. da assente a presente).
+- **attendance.deleted**: Quando una presenza viene eliminata.
+- **attendance.stats.generated**: Quando viene calcolata una statistica (percentuale o media) per il servizio Report.
+
+### Eventi Consumati (Consumed Events)
+
+- **course.scheduled**: Per sincronizzare le date delle lezioni dai corsi appena creati.
+- **course.updated**: Per aggiornare o invalidare presenze dopo modifiche al corso.
+- **user.deleted**: Per eliminare automaticamente le presenze legate a uno studente rimosso.
+- **report.requested**: Per generare e inviare la statistica di presenze richiesta dal microservizio Report.
+
+### Esempio di struttura evento - Statistiche Generate
+
+```json
+{
+  "requestId": "req-001",
+  "studentId": "123456",
+  "courseId": "Microservizi",
+  "totalLessons": 10,
+  "presentLessons": 8,
+  "attendancePercentage": 80.0,
+  "averagePresencesPerLesson": null,
+  "timestamp": "2024-06-01T12:00:00"
+}
+```
+
+_Esempio per media corso:_
+```json
+{
+  "requestId": "req-002",
+  "studentId": null,
+  "courseId": "Microservizi",
+  "totalLessons": 10,
+  "presentLessons": null,
+  "attendancePercentage": null,
+  "averagePresencesPerLesson": 7.5,
+  "timestamp": "2024-06-01T12:00:00"
+}
+```
+
+### Esempio di struttura evento - Richiesta Report
+
+```json
+{
+  "requestId": "req-003",
+  "studentId": "123456",
+  "courseId": "Microservizi",
+  "reportType": "percentage"
+}
+```
+
+---
+
+### Flusso asincrono delle statistiche
+
+1. Un microservizio (es. Report Management) pubblica un evento su `report.requested` per richiedere una statistica.
+2. Attendance Management consuma l'evento, calcola la statistica richiesta e pubblica il risultato su `attendance.stats.generated`.
+3. Il servizio che ha richiesto la statistica (o altri interessati) consuma l'evento di risposta e aggiorna la propria interfaccia o invia notifiche.
 
 ---
 
