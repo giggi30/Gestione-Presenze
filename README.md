@@ -8,12 +8,11 @@ Questo microservizio si occupa della registrazione, modifica, visualizzazione e 
 
 ## Funzionalità Principali
 
-- Registrazione delle presenze degli studenti alle lezioni
-- Modifica dello stato di presenza (presente/assente)
-- Eliminazione delle registrazioni di presenze
-- Visualizzazione delle presenze di un singolo studente
-- Visualizzazione delle presenze di uno studente durante un corso
-- Calcolo della percentuale di presenze per studente in un corso
+- **(Docenti)** Registrazione delle presenze degli studenti alle lezioni
+- **(Docenti)** Modifica dello stato di presenza (presente/assente)
+- **(Docenti)** Eliminazione delle registrazioni di presenze
+- **(Docenti & studente)** Visualizzazione delle presenze: _per ID, per matricola, per corso, per giorno_
+- Calcolo della percentuale di presenze di uno studente per un corso
 - Calcolo della media delle presenze per corso
 
 ---
@@ -22,7 +21,7 @@ Questo microservizio si occupa della registrazione, modifica, visualizzazione e 
 
 - **Linguaggio di Programmazione:** Java 17
 - **Framework:** Spring Boot 3.5.0
-- **Database:** PostgreSQL
+- **Database:** MySQL
 - **API Documentation:** Swagger
 - **Message Broker:** RabbitMQ (per la comunicazione asincrona)
 
