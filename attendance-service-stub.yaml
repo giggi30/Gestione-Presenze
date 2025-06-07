@@ -66,8 +66,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AttendanceDTO'
+        '400':
+          description: Modifica non consentita per incoerenza logica (es. entrata in ritardo su presenza, uscita anticipata su assenza)
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                entrataInRitardoNonConsentita:
+                  value: Entrata in ritardo consentita solo su assenze
+                uscitaAnticipataNonConsentita:
+                  value: Uscita anticipata consentita solo su presenze
         '404':
-          description: Presenza non trovata
+          description: attendanceId errato o presenza non trovata
+          content:
+            application/json:
+              schema:
+                type: string
+              example: attendanceId errato o presenza non trovata
 
   /api/deleteAttendance/{attendanceId}:
     delete:
