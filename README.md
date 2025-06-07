@@ -11,9 +11,9 @@ Questo microservizio si occupa della registrazione, modifica, visualizzazione e 
 - **(Docenti)** Registrazione delle presenze degli studenti alle lezioni
 - **(Docenti)** Modifica dello stato di presenza (presente/assente)
 - **(Docenti)** Eliminazione delle registrazioni di presenze
-- **(Docenti & studente)** Visualizzazione delle presenze: _per ID, per matricola, per corso, per giorno_
-- Calcolo della percentuale di presenze di uno studente per un corso
-- Calcolo della media delle presenze per corso
+- **(Docenti & studenti)** Visualizzazione delle presenze: _per ID, per matricola, per corso, per giorno_
+- **(Docenti & studenti)** Calcolo della percentuale di presenze di uno studente per un corso
+- **(Docenti)** Calcolo della media delle presenze per corso
 
 ---
 
