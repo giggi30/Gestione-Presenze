@@ -24,6 +24,7 @@ Questo microservizio si occupa della registrazione, modifica, visualizzazione e 
 - **Database:** MySQL
 - **API Documentation:** Swagger
 - **Message Broker:** RabbitMQ (per la comunicazione asincrona)
+- **Testing API REST:** Postman & MySQLWorkbench
 
 ---
 
