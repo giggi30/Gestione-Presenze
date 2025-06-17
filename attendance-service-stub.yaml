@@ -26,7 +26,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AttendanceDTO'
+              $ref: '#/components/schemas/AttendanceCreateDTO'
             example:
               studentId: "12345"
               courseId: "67890"
@@ -293,3 +293,18 @@ components:
         orarioUscita:
           type: string
           format: time
+
+    AttendanceStatsDTO:
+      type: object
+      properties:
+        studentId:
+          type: string
+        courseId:
+          type: string
+        attendancePercentage:
+          type: number
+          format: double
+      required:
+        - studentId
+        - courseId
+        - attendancePercentage
