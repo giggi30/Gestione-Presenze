@@ -223,7 +223,7 @@ GET     /api/attendances/course/{courseId}/attendance-average
 
 ## Autenticazione e Autorizzazione
 
-- Tutti gli endpoint richiedono autenticazione (solo nel microservizio reale, non nello stub).
+- Tutti gli endpoint richiedono autenticazione.
 - I ruoli utente determinano l'accesso:
   - **Docenti**: possono registrare, modificare presenze e visualizzare la media di presenze.
   - **Studenti**: possono visualizzare le proprie presenze/statistiche in percentuale.
@@ -256,7 +256,6 @@ Il microservizio Attendance Management utilizza RabbitMQ come message broker per
 
 - **course.scheduled**: Per sincronizzare le date delle lezioni dai corsi appena creati.
 - **course.updated**: Per aggiornare o invalidare presenze dopo modifiche al corso.
-- **user.deleted**: Per eliminare automaticamente le presenze legate a uno studente rimosso.
 - **report.requested**: Per generare e inviare la statistica di presenze richiesta dal microservizio Report.
 
 ### Esempio di struttura evento - Statistiche Generate
