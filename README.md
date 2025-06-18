@@ -70,22 +70,6 @@ public record AttendanceDTO(
 ) {}
 ```
 
-### DTO crea Presenza
-```java
-#############################################
-# AttendanceCreateDTO
-# @desc: DTO per registrare una presenza
-#############################################
-public record AttendanceCreateDTO(
-    String studentId,
-    String courseId,
-    LocalDate lessonDate,
-    String status,
-    LocalTime orarioIngresso,
-    LocalTime orarioUscita
-) {}
-```
-
 ### DTO modifica Presenze
 ```java
 #############################################
