@@ -8,7 +8,7 @@
    ```sql
    CREATE DATABASE newunimol;
    ```
-4. **(Opzionale)** Verifica che l'utente `Luigi` (password `Giggi123`) abbia accesso al database.
+4. **(Opzionale)** Verifica che l'utente `User` (password `P@ssw0rd`) abbia accesso al database.
 
 ---
 
