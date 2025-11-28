@@ -20,7 +20,7 @@ Questo microservizio si occupa della registrazione, modifica, visualizzazione e 
 ## Tech Stack
 
 - **Linguaggio di Programmazione:** Java 17
-- **Framework:** Spring Boot 3.5.0
+- **Framework:** Spring Boot 3.5.8
 - **Database:** MySQL
 - **API Documentation:** Swagger
 - **Message Broker:** RabbitMQ (per la comunicazione asincrona)
