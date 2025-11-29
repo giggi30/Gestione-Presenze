@@ -80,7 +80,7 @@ jobs:
     name: Build Docker Image
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    # if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'  # Temporaneamente disabilitato per test
 
     steps:
       - name: Checkout repository
