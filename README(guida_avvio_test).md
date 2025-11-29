@@ -1,149 +1,187 @@
-# Guida Avvio e Test Microservizio
+# Guida rapida: avvio e test del microservizio
 
-## 1. Avvio di MySQL Workbench e Configurazione Database
+Questa guida mostra i passaggi raccomandati per avviare e testare il microservizio Attendance Management in locale.
 
-1. **Apri MySQL Workbench**.
-2. **Connettiti** al server MySQL locale (`localhost:3306`).
-3. **Crea il database** per il microservizio:
-   ```sql
-   CREATE DATABASE newunimol;
-   ```
-4. **(Opzionale)** Verifica che l'utente `User` (password `P@ssw0rd`) abbia accesso al database.
+## Prerequisiti
+- Java 17
+- Maven (opzionale, perché è incluso lo script `./mvnw`)
+- Docker & Docker Compose (consigliato)
+- Postman o curl per testare le API
 
 ---
 
-## 2. Avvio del Microservizio
+## 1) Quickstart consigliato (Docker)
 
-1. **Apri il terminale** nella cartella del progetto.
-2. Esegui il comando:
+1. Avvia i servizi necessari con Docker Compose (MySQL + RabbitMQ):
+
    ```bash
-   ./mvnw spring-boot:run
+   docker-compose up -d
    ```
-   *(oppure `mvn spring-boot:run` se hai Maven installato globalmente)*
-3. Attendi che l'applicazione sia in esecuzione su `http://localhost:8080`.
 
----
+2. Verifica che i container siano "Up" e "healthy":
 
-## 3. Test del Microservizio con Postman
-
-1. **Apri Postman**.
-2. **Crea una nuova richiesta** per testare le API. Esempi:
-
-   ### Aggiungi una presenza
-   - **Metodo:** `POST`
-   - **URL:** `http://localhost:8080/api/attendances`
-   - **Body (JSON):**
-     ```json
-     {
-       "studentId": "12345",
-       "courseId": "CS101",
-       "lessonDate": "2024-03-20",
-       "status": "PRESENT"
-     }
-     ```
-   - **Header:**
-     - `Authorization: Bearer <token>`
-
-   ### Visualizza presenze di uno studente
-   - **Metodo:** `GET`
-   - **URL:** `http://localhost:8080/api/attendances/student/12345`
-   - **Header:**
-     - `Authorization: Bearer <token>`
-
-   ### Visualizza presenze di un corso
-   - **Metodo:** `GET`
-   - **URL:** `http://localhost:8080/api/attendances/course/CS101`
-   - **Header:**
-     - `Authorization: Bearer <token>`
-
-3. **Invia le richieste** e verifica le risposte.
-
----
-
-## 4. Verifica dei Dati nel Database
-
-1. Torna su **MySQL Workbench**.
-2. Esegui:
-   ```sql
-   USE newunimol;
-   SELECT * FROM presenza;
+   ```bash
+   docker ps
+   docker-compose ps
    ```
-   per vedere i dati inseriti dal microservizio.
+
+Questo avvia un database MySQL (db: `newunimol`, user: `User`, password: `P@ssw0rd`) e RabbitMQ (guest/guest).
 
 ---
 
-## 5. Test degli Eventi RabbitMQ
+## 2) Avvio dell'applicazione (locale)
 
-### Avvio di RabbitMQ
+Nella cartella del progetto esegui:
 
-1. Accedi alla UI su [http://localhost:15672](http://localhost:15672) (user: guest, pass: guest).
-
----
-
-### Pubblicazione di un evento su RabbitMQ (esempio: richiesta statistiche)
-
-1. Vai nella UI RabbitMQ → "Queues" → cerca `report.requested.queue`.
-2. Scorri in basso fino a "Publish message".
-3. Inserisci nel campo "Payload" un JSON come questo:
-   ```json
-   {
-     "requestId": "req-001",
-     "studentId": "12345",
-     "courseId": "67890",
-     "reportType": "percentage"
-   }
-   ```
-   Oppure per la media corso:
-   ```json
-   {
-     "requestId": "req-002",
-     "studentId": null,
-     "courseId": "67890",
-     "reportType": "average"
-   }
-   ```
-4. Premi "Publish Message".
-
----
-
-### Verifica della ricezione dell'evento
-
-1. Dopo pochi secondi, vai su "Queues" → `attendance.stats.generated.queue`.
-2. Clicca su "Get Message(s)" per vedere il risultato della statistica generata.
-3. Puoi vedere i dettagli anche nei log del microservizio.
-
----
-
-### Note
-- Se non vedi la coda, aggiorna la pagina "Queues" o riavvia il microservizio.
-- Se il messaggio non viene consumato, controlla i log per eventuali errori di deserializzazione o configurazione.
-- Puoi testare anche gli altri eventi (creazione, aggiornamento, eliminazione presenza) pubblicando sulle rispettive code.
-
----
-
-### Note
-
-- Assicurati che MySQL sia avviato prima di lanciare il microservizio.
-- Le tabelle vengono create automaticamente all'avvio grazie alla configurazione JPA.
-- Puoi modificare le richieste in Postman per testare altri casi. 
-
----
-
-## Autenticazione e Token JWT per i Ruoli
-
-- **Tutti gli endpoint REST richiedono un token JWT valido**.
-- Il token va inserito nell'header delle richieste come:
-  - `Authorization: Bearer <token>`
-- **I ruoli utente determinano l'accesso alle funzionalità:**
-  - `ROLE_DOCENTE`: può registrare, modificare, eliminare presenze e vedere le statistiche di tutti.
-  - `ROLE_STUDENTE`: può vedere solo le proprie presenze e statistiche.
-  - `ROLE_ADMIN`: accesso completo a tutte le funzionalità.
-- Se il token non è presente o non ha i permessi necessari, la risposta sarà 401/403.
-- Puoi ottenere un token JWT tramite il microservizio di autenticazione/ruoli (chiedi al team di User_Roles_Management per un token di test).
-
-**Esempio di header in Postman:**
-```
-Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NSIsInVzZXJuYW1lIjoiZG9jZW50ZSIsInJvbGUiOiJST0xFX0RPQ0VOVEUiLCJpYXQiOjE2ODU2ODAwMDAsImV4cCI6MTY4NTY4MzYwMH0.SIGNATURE
+```bash
+./mvnw spring-boot:run
 ```
 
---- 
+L'applicazione sarà disponibile su: http://localhost:8080
+
+Nota alternativa: puoi costruire il JAR con `./mvnw package` e avviare con `java -jar target/newunimol-0.0.1-SNAPSHOT.jar`.
+
+---
+
+## 3) Generazione e validazione token JWT (per test locale)
+
+Per semplicità il microservizio include endpoint per generare token di prova.
+
+- Genera un token (POST):
+
+  URL: `POST http://localhost:8080/api/token/generate`
+
+  Body JSON di esempio:
+  ```json
+  {
+    "userId": "12345",
+    "username": "mario.rossi",
+    "role": "DOCENTE"
+  }
+  ```
+
+  Risposta di esempio:
+  ```json
+  {
+    "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "userId": "12345",
+    "role": "DOCENTE",
+    "issuedAt": "2024-03-20T10:00:00",
+    "expiresIn": 3600
+  }
+  ```
+
+- Valida un token (GET):
+
+  URL: `GET http://localhost:8080/api/token/validate`
+  Header: `Authorization: Bearer <token>`
+
+  Risposta di esempio:
+  ```json
+  {
+    "valid": true,
+    "message": "Token valido",
+    "userId": "12345",
+    "role": "DOCENTE"
+  }
+  ```
+
+---
+
+## 4) Endpoint principali (URL e breve descrizione)
+
+Base path: `/api`
+
+- GET  `/api/test` — endpoint di test, risponde con stringa semplice
+- POST `/api/token/generate` — genera token JWT di test
+- GET  `/api/token/validate` — valida token dal header
+- POST `/api/createAttendance` — crea una presenza (richiede header Authorization)
+- PUT  `/api/updateAttendance/{attendanceId}` — aggiorna una presenza
+- DELETE `/api/deleteAttendance/{attendanceId}` — elimina una presenza
+- GET  `/api/getStudentAttendances/{studentId}` — presenze di uno studente
+- GET  `/api/getAttendance/{attendanceId}` — presenza tramite ID
+
+Tutte le chiamate protette richiedono l'header:
+
+```
+Authorization: Bearer <token>
+```
+
+Ruoli (per i test):
+- `DOCENTE` — creare/modificare/eliminare presenze, visualizzare statistiche globali
+- `STUDENTE` — visualizzare solo le proprie presenze
+
+---
+
+## 5) Esempio Postman: creare una presenza
+
+- URL: `POST http://localhost:8080/api/createAttendance`
+- Header: `Authorization: Bearer <token>`
+- Body (JSON):
+  ```json
+  {
+    "studentId": "12345",
+    "courseId": "CS101",
+    "lessonDate": "2024-03-20",
+    "status": "PRESENT"
+  }
+  ```
+
+---
+
+## 6) Test RabbitMQ (UI e pubblicazione messaggi)
+
+- UI RabbitMQ: http://localhost:15672  (guest / guest)
+
+- Per testare una richiesta di report, pubblica su `report.requested.queue` un payload come:
+  ```json
+  {
+    "requestId": "req-001",
+    "studentId": "12345",
+    "courseId": "67890",
+    "reportType": "percentage"
+  }
+  ```
+
+- Verifica la coda `attendance.stats.generated.queue` per i messaggi risultanti.
+
+---
+
+## 7) Verifica del database
+
+Apri MySQL Workbench o usa il client MySQL e verifica i dati:
+
+```sql
+USE newunimol;
+SELECT * FROM presenza;
+```
+
+---
+
+## 8) Environment variables e sicurezza
+
+- Per lo sviluppo si usa il file `.env` (non committare nel repository). Un esempio è presente in `.env.example`.
+- Non includere chiavi o password sensibili nel repository (jwt private key, credenziali DB in chiaro). Rigenera le chiavi prima di un qualsiasi deploy pubblico.
+
+---
+
+## 9) Troubleshooting rapido
+
+- 404 su endpoint: verifica il path (es. `/api/test`) e che l'app sia in esecuzione su 8080.
+- Errori DB: assicurati che MySQL sia up (docker ps) e che le credenziali corrispondano a `application.properties` o variabili d'ambiente.
+- RabbitMQ: controlla la UI su 15672 e i log dell'app.
+
+---
+
+## 10) Pipeline e CI (sintesi)
+
+- Si consiglia di aggiungere un workflow GitHub Actions che esegua `./mvnw -B package` e i test su push/pull request.
+
+---
+
+Se vuoi, procedo a:
+- aggiungere un file `docker-compose.override.yml` per personalizzazioni locali
+- creare il workflow GitHub Actions con build e test
+- aggiornare il README principale con un link a questa guida
+
+Dimmi quale passo vuoi seguire.
