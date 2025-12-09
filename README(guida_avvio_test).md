@@ -5,7 +5,7 @@ Questa guida mostra i passaggi raccomandati per avviare e testare il microserviz
 ## Prerequisiti
 - Java 17
 - Maven (opzionale, perché è incluso lo script `./mvnw`)
-- Docker & Docker Compose (consigliato)
+- Docker & Docker Compose
 - Postman o curl per testare le API
 
 ---
@@ -13,6 +13,8 @@ Questa guida mostra i passaggi raccomandati per avviare e testare il microserviz
 ## 1) Quickstart consigliato (Docker)
 
 1. Avvia i servizi necessari con Docker Compose (MySQL + RabbitMQ):
+
+   Assicurati di avere un file `.env` configurato correttamente (puoi usare `.env.example` come base).
 
    ```bash
    docker-compose up -d
@@ -25,7 +27,7 @@ Questa guida mostra i passaggi raccomandati per avviare e testare il microserviz
    docker-compose ps
    ```
 
-Questo avvia un database MySQL (db: `newunimol`, user: `User`, password: `P@ssw0rd`) e RabbitMQ (guest/guest).
+Questo avvia un database MySQL e RabbitMQ utilizzando le credenziali definite nel file `.env`.
 
 ---
 
@@ -177,11 +179,3 @@ SELECT * FROM presenza;
 
 - Si consiglia di aggiungere un workflow GitHub Actions che esegua `./mvnw -B package` e i test su push/pull request.
 
----
-
-Se vuoi, procedo a:
-- aggiungere un file `docker-compose.override.yml` per personalizzazioni locali
-- creare il workflow GitHub Actions con build e test
-- aggiornare il README principale con un link a questa guida
-
-Dimmi quale passo vuoi seguire.

@@ -1,12 +1,14 @@
+version: '3.8'
+
 services:
   mysql:
     image: mysql:8.0
     container_name: newunimol-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: newunimol
-      MYSQL_USER: User
-      MYSQL_PASSWORD: P@ssw0rd
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
@@ -21,8 +23,8 @@ services:
     image: rabbitmq:3-management
     container_name: newunimol-rabbitmq
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     ports:
       - "5672:5672"   # AMQP protocol
       - "15672:15672" # Management UI
@@ -32,5 +34,33 @@ services:
       timeout: 5s
       retries: 5
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: newunimol-app:latest
+    container_name: newunimol-app
+    depends_on:    #assicura che mysql e rabbitmq siano avviati prima di app
+      - mysql
+      - rabbitmq
+    ports:
+      - "8080:8080"
+    environment:
+      # Spring Boot datasource and RabbitMQ settings pointing to the compose service names
+      SPRING_DATASOURCE_URL: jdbc:mysql://newunimol-mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_RABBITMQ_HOST: newunimol-rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    restart: on-failure
+
 volumes:
-  mysql_data:
+  mysql_data: {}

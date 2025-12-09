@@ -1,5 +1,5 @@
 # Build stage
-FROM eclipse-temurin:17-jdk-alpine AS build
+FROM eclipse-temurin:17-jdk AS build
 WORKDIR /app
 
 # Copy Maven wrapper and pom.xml
@@ -18,12 +18,16 @@ RUN ./mvnw package -DskipTests -B
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-# Create non-root user for security
-RUN addgroup -S spring && adduser -S spring -G spring
-USER spring:spring
+# Create non-root user for security (Debian-compatible)
+RUN groupadd --system spring || true \
+    && useradd --system --no-create-home --shell /bin/false --gid spring spring || true
 
-# Copy JAR from build stage
+# Copy JAR from build stage as root, set ownership and permissions
 COPY --from=build /app/target/*.jar app.jar
+RUN chown spring:spring /app/app.jar && chmod 755 /app/app.jar
+
+# Switch to non-root user
+USER spring:spring
 
 # Expose port
 EXPOSE 8080
