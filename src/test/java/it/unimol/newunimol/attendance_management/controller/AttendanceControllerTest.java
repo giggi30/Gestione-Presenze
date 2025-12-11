@@ -1,7 +1,7 @@
 package it.unimol.newunimol.attendance_management.controller;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -13,8 +13,12 @@ import java.time.LocalTime;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -24,20 +28,37 @@ import it.unimol.newunimol.attendance_management.model.presenza;
 import it.unimol.newunimol.attendance_management.service.AttendanceService;
 import it.unimol.newunimol.attendance_management.service.TokenJWTService;
 
-@WebMvcTest(AttendanceController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@Import(AttendanceControllerTest.TestConfig.class)
 class AttendanceControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Autowired
     private AttendanceService attendanceService;
 
-    @MockBean
+    @Autowired
     private TokenJWTService tokenJWTService;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        @Primary
+        public AttendanceService attendanceService() {
+            return mock(AttendanceService.class);
+        }
+
+        @Bean
+        @Primary
+        public TokenJWTService tokenJWTService() {
+            return mock(TokenJWTService.class);
+        }
+    }
 
     @Test
     void testEndpoint_ShouldReturnSuccessMessage() throws Exception {

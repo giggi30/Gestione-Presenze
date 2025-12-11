@@ -13,21 +13,6 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: newunimol
-          MYSQL_USER: User
-          MYSQL_PASSWORD: P@ssw0rd
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
       rabbitmq:
         image: rabbitmq:3-management
         ports:
@@ -50,23 +35,14 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Wait for MySQL to be ready
-        run: |
-          while ! mysqladmin ping -h"127.0.0.1" --silent; do
-            sleep 1
-          done
+      - name: Grant execute permission for mvnw
+        run: chmod +x mvnw
 
       - name: Build with Maven
         run: ./mvnw clean package -DskipTests
 
       - name: Run tests
         run: ./mvnw test
-        env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/newunimol
-          SPRING_DATASOURCE_USERNAME: User
-          SPRING_DATASOURCE_PASSWORD: P@ssw0rd
-          SPRING_RABBITMQ_HOST: localhost
-          SPRING_RABBITMQ_PORT: 5672
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -85,16 +61,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Build JAR
-        run: ./mvnw package -DskipTests -B
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

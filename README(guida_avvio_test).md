@@ -179,3 +179,28 @@ SELECT * FROM presenza;
 
 - Si consiglia di aggiungere un workflow GitHub Actions che esegua `./mvnw -B package` e i test su push/pull request.
 
+---
+
+## 11) Generare e visualizzare il report di coverage (JaCoCo)
+
+Per ottenere i test e visualizzare la coverage in modo user-friendly è disponibile lo script `show-coverage-test.sh` nella root del progetto. Lo script esegue i test, genera il report JaCoCo (`target/site/jacoco`) e avvia un semplice server HTTP che espone il sito generato.
+
+- macOS / Linux (consigliato):
+
+  Requisiti: `python3` (per il server statico) e `lsof` (per trovare una porta libera). Se usi Linux senza `open`, il link verrà stampato e puoi aprirlo manualmente con `xdg-open` o il tuo browser.
+
+  ```bash
+  chmod +x ./show-coverage-test.sh
+  ./show-coverage-test.sh
+  ```
+
+  Output tipico: lo script mostrerà l'URL (es. `http://localhost:8000/jacoco/index.html`) e aprirà il browser di default (su macOS). Il server rimane in background; per chiuderlo usa `kill <PID>` oppure interrompi il processo.
+
+- Linux senza `open` (se il browser non si apre automaticamente):
+
+  Dopo l'esecuzione dello script apri manualmente l'URL stampato, oppure usa:
+  ```bash
+  xdg-open "http://localhost:8000/jacoco/index.html"
+  ```
+
+
