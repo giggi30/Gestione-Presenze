@@ -3,7 +3,7 @@ package it.unimol.newunimol.attendance_management.service;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import it.unimol.newunimol.attendance_management.model.presenza;
+import it.unimol.newunimol.attendance_management.model.Presenza;
 import it.unimol.newunimol.attendance_management.repository.PresenzaRepository;
 import it.unimol.newunimol.attendance_management.DTO.AttendanceUpdateDTO;
 import it.unimol.newunimol.attendance_management.DTO.AttendanceDTO;
@@ -31,8 +31,8 @@ public class AttendanceService {
      * @param presenza la presenza da aggiungere
      * @return la presenza creata con un nuovo ID
      */
-    public presenza createAttendance(presenza presenza) {
-        presenza newPresenza = new presenza(
+    public Presenza createAttendance(Presenza presenza) {
+        Presenza newPresenza = new Presenza(
             UUID.randomUUID().toString(),
             presenza.getStudentId(),
             presenza.getCourseId(),
@@ -41,7 +41,7 @@ public class AttendanceService {
             presenza.getOrarioIngresso(),
             null // orarioUscita sempre null in creazione
         );
-        presenza saved = presenzaRepository.save(newPresenza);
+        Presenza saved = presenzaRepository.save(newPresenza);
         // Pubblica evento RabbitMQ
         eventPublisherService.publishAttendanceCreated(
             saved.getAttendanceId(),
@@ -61,7 +61,7 @@ public class AttendanceService {
      * @param updateDTO il DTO con i nuovi valori
      * @return la presenza aggiornata, o null se non trovata
      */
-    public presenza updateAttendance(String attendanceId, AttendanceUpdateDTO updateDTO) {
+    public Presenza updateAttendance(String attendanceId, AttendanceUpdateDTO updateDTO) {
         return presenzaRepository.findById(attendanceId)
             .map(p -> {
                 String oldStatus = p.getStatus();
@@ -87,7 +87,7 @@ public class AttendanceService {
                 if (updateDTO.orarioUscita() != null) {
                     p.setOrarioUscita(updateDTO.orarioUscita());
                 }
-                presenza updated = presenzaRepository.save(p);
+                Presenza updated = presenzaRepository.save(p);
                 // Pubblica evento RabbitMQ
                 eventPublisherService.publishAttendanceUpdated(
                     updated.getAttendanceId(),
@@ -107,7 +107,7 @@ public class AttendanceService {
      * @param attendanceId l'ID della presenza da eliminare
      */
     public void deleteAttendance(String attendanceId) {
-        presenza p = presenzaRepository.findById(attendanceId).orElse(null);
+        Presenza p = presenzaRepository.findById(attendanceId).orElse(null);
         if (p != null) {
             presenzaRepository.deleteById(attendanceId);
             // Pubblica evento RabbitMQ
@@ -127,7 +127,7 @@ public class AttendanceService {
      * @param attendanceId l'ID della presenza
      * @return la presenza trovata, o null se non esiste
      */
-    public presenza getAttendanceById(String attendanceId) {
+    public Presenza getAttendanceById(String attendanceId) {
         return presenzaRepository.findById(attendanceId).orElse(null);
     }
 
@@ -136,7 +136,7 @@ public class AttendanceService {
      * @param studentId l'ID dello studente
      * @return lista delle presenze dello studente
      */
-    public List<presenza> getStudentAttendances(String studentId) {
+    public List<Presenza> getStudentAttendances(String studentId) {
         return presenzaRepository.findByStudentId(studentId);
     }
 
@@ -145,7 +145,7 @@ public class AttendanceService {
      * @param courseId l'ID del corso
      * @return lista delle presenze del corso
      */
-    public List<presenza> getCourseAttendances(String courseId) {
+    public List<Presenza> getCourseAttendances(String courseId) {
         return presenzaRepository.findByCourseId(courseId);
     }
 
@@ -154,7 +154,7 @@ public class AttendanceService {
      * @param date la data delle presenze
      * @return lista delle presenze del giorno
      */
-    public List<presenza> getAttendancesByDay(LocalDate date) {
+    public List<Presenza> getAttendancesByDay(LocalDate date) {
         return presenzaRepository.findByLessonDate(date);
     }
 
@@ -166,13 +166,13 @@ public class AttendanceService {
      */
     public Map<String, Double> getStudentCourseStatistics(String studentId, String courseId) {
         // Ottiene tutte le presenze dello studente per quel corso
-        List<presenza> studentCourseAttendances = presenzaRepository.findByStudentId(studentId)
+        List<Presenza> studentCourseAttendances = presenzaRepository.findByStudentId(studentId)
             .stream()
             .filter(p -> p.getCourseId().equals(courseId))
             .toList();
 
         // Ottiene il numero totale di lezioni del corso
-        List<presenza> courseAttendances = presenzaRepository.findByCourseId(courseId);
+        List<Presenza> courseAttendances = presenzaRepository.findByCourseId(courseId);
         long totalCourseLessons = courseAttendances.stream()
             .map(p -> p.getLessonDate())
             .distinct()
@@ -205,7 +205,7 @@ public class AttendanceService {
      */
     public Map<String, Double> getCourseStatistics(String courseId) {
         // Ottiene tutte le date delle lezioni del corso
-        List<presenza> courseAttendances = presenzaRepository.findByCourseId(courseId);
+        List<Presenza> courseAttendances = presenzaRepository.findByCourseId(courseId);
         List<LocalDate> courseDates = courseAttendances.stream()
             .map(p -> p.getLessonDate())
             .distinct()
@@ -233,7 +233,7 @@ public class AttendanceService {
     }
 
     public AttendanceDTO getAttendanceByIdDTO(String attendanceId) {
-        presenza p = getAttendanceById(attendanceId);
+        Presenza p = getAttendanceById(attendanceId);
         if (p == null) return null;
         return new AttendanceDTO(
             p.getAttendanceId(),

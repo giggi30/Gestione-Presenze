@@ -8,7 +8,7 @@ import java.time.LocalTime;
 
 @Entity
 @Table(name = "presenze")
-public class presenza {
+public class Presenza {
 
     @Id
     private String attendanceId;
@@ -19,11 +19,11 @@ public class presenza {
     private LocalTime orarioIngresso;
     private LocalTime orarioUscita;
 
-    public presenza() {
+    public Presenza() {
         // Costruttore vuoto richiesto da JPA
     }
 
-    public presenza(String attendanceId, String studentId, String courseId, LocalDate lessonDate, String status, LocalTime orarioIngresso, LocalTime orarioUscita) {
+    public Presenza(String attendanceId, String studentId, String courseId, LocalDate lessonDate, String status, LocalTime orarioIngresso, LocalTime orarioUscita) {
         this.attendanceId = attendanceId;
         this.studentId = studentId;
         this.courseId = courseId;

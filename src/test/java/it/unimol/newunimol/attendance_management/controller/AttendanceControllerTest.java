@@ -24,7 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import it.unimol.newunimol.attendance_management.model.presenza;
+import it.unimol.newunimol.attendance_management.model.Presenza;
 import it.unimol.newunimol.attendance_management.service.AttendanceService;
 import it.unimol.newunimol.attendance_management.service.TokenJWTService;
 
@@ -72,19 +72,19 @@ class AttendanceControllerTest {
         String token = "valid-token";
         String authHeader = "Bearer " + token;
         
-        presenza inputPresenza = new presenza();
+        Presenza inputPresenza = new Presenza();
         inputPresenza.setStudentId("123");
         inputPresenza.setCourseId("CS101");
         inputPresenza.setLessonDate(LocalDate.now());
         inputPresenza.setOrarioIngresso(LocalTime.of(9, 0));
         inputPresenza.setStatus("PRESENT");
 
-        presenza savedPresenza = new presenza(
+        Presenza savedPresenza = new Presenza(
             "id-1", "123", "CS101", LocalDate.now(), "PRESENT", LocalTime.of(9, 0), null
         );
 
         when(tokenJWTService.hasRole(token, "DOCENTE")).thenReturn(true);
-        when(attendanceService.createAttendance(any(presenza.class))).thenReturn(savedPresenza);
+        when(attendanceService.createAttendance(any(Presenza.class))).thenReturn(savedPresenza);
 
         // Act & Assert
         mockMvc.perform(post("/api/createAttendance")
@@ -100,7 +100,7 @@ class AttendanceControllerTest {
         String token = "student-token";
         String authHeader = "Bearer " + token;
         
-        presenza inputPresenza = new presenza();
+        Presenza inputPresenza = new Presenza();
         inputPresenza.setStudentId("123");
 
         when(tokenJWTService.hasRole(token, "DOCENTE")).thenReturn(false);
@@ -116,7 +116,7 @@ class AttendanceControllerTest {
     @Test
     void createAttendance_WithoutToken_ShouldReturnBadRequest() throws Exception {
         // Arrange
-        presenza inputPresenza = new presenza();
+        Presenza inputPresenza = new Presenza();
 
         // Act & Assert
         mockMvc.perform(post("/api/createAttendance")

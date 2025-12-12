@@ -13,7 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import it.unimol.newunimol.attendance_management.model.presenza;
+import it.unimol.newunimol.attendance_management.model.Presenza;
 import it.unimol.newunimol.attendance_management.repository.PresenzaRepository;
 import it.unimol.newunimol.attendance_management.DTO.AttendanceUpdateDTO;
 
@@ -32,7 +32,7 @@ class AttendanceServiceTest {
     @Test
     void createAttendanceTest() {
         // Arrange
-        presenza inputPresenza = new presenza();
+        Presenza inputPresenza = new Presenza();
         inputPresenza.setStudentId("123");
         inputPresenza.setCourseId("CS101");
         inputPresenza.setLessonDate(LocalDate.of(2024, 3, 20));
@@ -40,7 +40,7 @@ class AttendanceServiceTest {
         inputPresenza.setOrarioIngresso(LocalTime.of(9, 0));
 
         // Simuliamo l'oggetto salvato dal repository (che avrà un ID generato)
-        presenza savedPresenza = new presenza(
+        Presenza savedPresenza = new Presenza(
             "generated-id-123",
             "123",
             "CS101",
@@ -50,10 +50,10 @@ class AttendanceServiceTest {
             null
         );
 
-        when(presenzaRepository.save(any(presenza.class))).thenReturn(savedPresenza);
+        when(presenzaRepository.save(any(Presenza.class))).thenReturn(savedPresenza);
 
         // Act
-        presenza result = attendanceService.createAttendance(inputPresenza);
+        Presenza result = attendanceService.createAttendance(inputPresenza);
 
         // Assert
         assertNotNull(result);
@@ -61,7 +61,7 @@ class AttendanceServiceTest {
         assertEquals("123", result.getStudentId());
 
         // Verifichiamo che il repository sia stato chiamato
-        verify(presenzaRepository).save(any(presenza.class));
+        verify(presenzaRepository).save(any(Presenza.class));
         
         // Verifichiamo che l'evento sia stato pubblicato
         verify(eventPublisherService).publishAttendanceCreated(
@@ -79,17 +79,17 @@ class AttendanceServiceTest {
     void updateAttendance_ShouldUpdateAndPublishEvent() {
         // Arrange
         String attendanceId = "id-123";
-        presenza existingPresenza = new presenza(
+        Presenza existingPresenza = new Presenza(
             attendanceId, "student-1", "course-1", LocalDate.now(), "absent", null, null
         );
         
         AttendanceUpdateDTO updateDTO = new AttendanceUpdateDTO("present", LocalTime.of(9, 30), null);
         
         when(presenzaRepository.findById(attendanceId)).thenReturn(java.util.Optional.of(existingPresenza));
-        when(presenzaRepository.save(any(presenza.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(presenzaRepository.save(any(Presenza.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        presenza result = attendanceService.updateAttendance(attendanceId, updateDTO);
+        Presenza result = attendanceService.updateAttendance(attendanceId, updateDTO);
 
         // Assert
         assertNotNull(result);
@@ -105,7 +105,7 @@ class AttendanceServiceTest {
     void updateAttendance_WithInvalidLogic_ShouldThrowException() {
         // Arrange
         String attendanceId = "id-123";
-        presenza existingPresenza = new presenza(
+        Presenza existingPresenza = new Presenza(
             attendanceId, "student-1", "course-1", LocalDate.now(), "present", LocalTime.of(9, 0), null
         );
         
@@ -124,7 +124,7 @@ class AttendanceServiceTest {
     void deleteAttendance_ShouldDeleteAndPublishEvent() {
         // Arrange
         String attendanceId = "id-123";
-        presenza existingPresenza = new presenza(
+        Presenza existingPresenza = new Presenza(
             attendanceId, "student-1", "course-1", LocalDate.now(), "present", LocalTime.of(9, 0), null
         );
         
@@ -156,7 +156,7 @@ class AttendanceServiceTest {
     void getStudentAttendances_ShouldReturnList() {
         // Arrange
         String studentId = "student-1";
-        when(presenzaRepository.findByStudentId(studentId)).thenReturn(java.util.List.of(new presenza()));
+        when(presenzaRepository.findByStudentId(studentId)).thenReturn(java.util.List.of(new Presenza()));
 
         // Act
         var result = attendanceService.getStudentAttendances(studentId);
@@ -170,17 +170,17 @@ class AttendanceServiceTest {
     void updateAttendance_EarlyExit_Success() {
         // Arrange
         String attendanceId = "id-123";
-        presenza existingPresenza = new presenza(
+        Presenza existingPresenza = new Presenza(
             attendanceId, "student-1", "course-1", LocalDate.now(), "present", LocalTime.of(9, 0), null
         );
         
         AttendanceUpdateDTO updateDTO = new AttendanceUpdateDTO(null, null, LocalTime.of(11, 0));
         
         when(presenzaRepository.findById(attendanceId)).thenReturn(java.util.Optional.of(existingPresenza));
-        when(presenzaRepository.save(any(presenza.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(presenzaRepository.save(any(Presenza.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        presenza result = attendanceService.updateAttendance(attendanceId, updateDTO);
+        Presenza result = attendanceService.updateAttendance(attendanceId, updateDTO);
 
         // Assert
         assertNotNull(result);
@@ -191,7 +191,7 @@ class AttendanceServiceTest {
     void updateAttendance_EarlyExit_Failure() {
         // Arrange
         String attendanceId = "id-123";
-        presenza existingPresenza = new presenza(
+        Presenza existingPresenza = new Presenza(
             attendanceId, "student-1", "course-1", LocalDate.now(), "absent", null, null
         );
         
@@ -214,7 +214,7 @@ class AttendanceServiceTest {
         when(presenzaRepository.findById(attendanceId)).thenReturn(java.util.Optional.empty());
 
         // Act
-        presenza result = attendanceService.updateAttendance(attendanceId, updateDTO);
+        Presenza result = attendanceService.updateAttendance(attendanceId, updateDTO);
 
         // Assert
         assertNull(result);
@@ -224,12 +224,12 @@ class AttendanceServiceTest {
     void getAttendanceById_Found() {
         // Arrange
         String attendanceId = "id-123";
-        presenza p = new presenza();
+        Presenza p = new Presenza();
         p.setAttendanceId(attendanceId);
         when(presenzaRepository.findById(attendanceId)).thenReturn(java.util.Optional.of(p));
 
         // Act
-        presenza result = attendanceService.getAttendanceById(attendanceId);
+        Presenza result = attendanceService.getAttendanceById(attendanceId);
 
         // Assert
         assertNotNull(result);
@@ -243,7 +243,7 @@ class AttendanceServiceTest {
         when(presenzaRepository.findById(attendanceId)).thenReturn(java.util.Optional.empty());
 
         // Act
-        presenza result = attendanceService.getAttendanceById(attendanceId);
+        Presenza result = attendanceService.getAttendanceById(attendanceId);
 
         // Assert
         assertNull(result);
@@ -253,7 +253,7 @@ class AttendanceServiceTest {
     void getCourseAttendances_ShouldReturnList() {
         // Arrange
         String courseId = "course-1";
-        when(presenzaRepository.findByCourseId(courseId)).thenReturn(java.util.List.of(new presenza()));
+        when(presenzaRepository.findByCourseId(courseId)).thenReturn(java.util.List.of(new Presenza()));
 
         // Act
         var result = attendanceService.getCourseAttendances(courseId);
@@ -267,7 +267,7 @@ class AttendanceServiceTest {
     void getAttendancesByDay_ShouldReturnList() {
         // Arrange
         LocalDate date = LocalDate.now();
-        when(presenzaRepository.findByLessonDate(date)).thenReturn(java.util.List.of(new presenza()));
+        when(presenzaRepository.findByLessonDate(date)).thenReturn(java.util.List.of(new Presenza()));
 
         // Act
         var result = attendanceService.getAttendancesByDay(date);
@@ -283,8 +283,8 @@ class AttendanceServiceTest {
         String studentId = "student-1";
         String courseId = "course-1";
         
-        presenza p1 = new presenza("1", studentId, courseId, LocalDate.of(2024, 1, 1), "present", null, null);
-        presenza p2 = new presenza("2", studentId, courseId, LocalDate.of(2024, 1, 2), "absent", null, null);
+        Presenza p1 = new Presenza("1", studentId, courseId, LocalDate.of(2024, 1, 1), "present", null, null);
+        Presenza p2 = new Presenza("2", studentId, courseId, LocalDate.of(2024, 1, 2), "absent", null, null);
         
         // Mock findByStudentId (returns all attendances for student)
         when(presenzaRepository.findByStudentId(studentId)).thenReturn(java.util.List.of(p1, p2));
@@ -328,12 +328,12 @@ class AttendanceServiceTest {
         LocalDate date2 = LocalDate.of(2024, 1, 2);
         
         // Lesson 1: 2 students present
-        presenza p1 = new presenza("1", "s1", courseId, date1, "present", null, null);
-        presenza p2 = new presenza("2", "s2", courseId, date1, "present", null, null);
+        Presenza p1 = new Presenza("1", "s1", courseId, date1, "present", null, null);
+        Presenza p2 = new Presenza("2", "s2", courseId, date1, "present", null, null);
         
         // Lesson 2: 1 student present, 1 absent
-        presenza p3 = new presenza("3", "s1", courseId, date2, "present", null, null);
-        presenza p4 = new presenza("4", "s2", courseId, date2, "absent", null, null);
+        Presenza p3 = new Presenza("3", "s1", courseId, date2, "present", null, null);
+        Presenza p4 = new Presenza("4", "s2", courseId, date2, "absent", null, null);
         
         when(presenzaRepository.findByCourseId(courseId)).thenReturn(java.util.List.of(p1, p2, p3, p4));
 
@@ -364,7 +364,7 @@ class AttendanceServiceTest {
     void getAttendanceByIdDTO_Found() {
         // Arrange
         String attendanceId = "id-123";
-        presenza p = new presenza(attendanceId, "s1", "c1", LocalDate.now(), "present", null, null);
+        Presenza p = new Presenza(attendanceId, "s1", "c1", LocalDate.now(), "present", null, null);
         when(presenzaRepository.findById(attendanceId)).thenReturn(java.util.Optional.of(p));
 
         // Act
@@ -392,17 +392,17 @@ class AttendanceServiceTest {
     void updateAttendance_UpdateStatusOnly() {
         // Arrange
         String attendanceId = "id-123";
-        presenza existingPresenza = new presenza(
+        Presenza existingPresenza = new Presenza(
             attendanceId, "student-1", "course-1", LocalDate.now(), "absent", null, null
         );
         
         AttendanceUpdateDTO updateDTO = new AttendanceUpdateDTO("present", null, null);
         
         when(presenzaRepository.findById(attendanceId)).thenReturn(java.util.Optional.of(existingPresenza));
-        when(presenzaRepository.save(any(presenza.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(presenzaRepository.save(any(Presenza.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        presenza result = attendanceService.updateAttendance(attendanceId, updateDTO);
+        Presenza result = attendanceService.updateAttendance(attendanceId, updateDTO);
 
         // Assert
         assertNotNull(result);
@@ -415,17 +415,17 @@ class AttendanceServiceTest {
     void updateAttendance_UpdateOrarioIngressoOnly() {
         // Arrange
         String attendanceId = "id-123";
-        presenza existingPresenza = new presenza(
+        Presenza existingPresenza = new Presenza(
             attendanceId, "student-1", "course-1", LocalDate.now(), "absent", null, null
         );
         
         AttendanceUpdateDTO updateDTO = new AttendanceUpdateDTO(null, LocalTime.of(9, 30), null);
         
         when(presenzaRepository.findById(attendanceId)).thenReturn(java.util.Optional.of(existingPresenza));
-        when(presenzaRepository.save(any(presenza.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(presenzaRepository.save(any(Presenza.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        presenza result = attendanceService.updateAttendance(attendanceId, updateDTO);
+        Presenza result = attendanceService.updateAttendance(attendanceId, updateDTO);
 
         // Assert
         assertNotNull(result);
@@ -437,17 +437,17 @@ class AttendanceServiceTest {
     void updateAttendance_UpdateOrarioUscitaOnly() {
         // Arrange
         String attendanceId = "id-123";
-        presenza existingPresenza = new presenza(
+        Presenza existingPresenza = new Presenza(
             attendanceId, "student-1", "course-1", LocalDate.now(), "present", LocalTime.of(9, 0), null
         );
         
         AttendanceUpdateDTO updateDTO = new AttendanceUpdateDTO(null, null, LocalTime.of(11, 0));
         
         when(presenzaRepository.findById(attendanceId)).thenReturn(java.util.Optional.of(existingPresenza));
-        when(presenzaRepository.save(any(presenza.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(presenzaRepository.save(any(Presenza.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        presenza result = attendanceService.updateAttendance(attendanceId, updateDTO);
+        Presenza result = attendanceService.updateAttendance(attendanceId, updateDTO);
 
         // Assert
         assertNotNull(result);

@@ -98,6 +98,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>com.github.spotbugs</groupId>
+			<artifactId>spotbugs-annotations</artifactId>
+			<version>4.8.3</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
@@ -169,7 +175,7 @@
 				<artifactId>spotbugs-maven-plugin</artifactId>
 				<version>4.8.6.6</version>
 				<configuration>
-					<failOnError>false</failOnError>
+					<failOnError>true</failOnError>
 				</configuration>
 				<executions>
 					<execution>

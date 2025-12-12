@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import it.unimol.newunimol.attendance_management.model.presenza;
+import it.unimol.newunimol.attendance_management.model.Presenza;
 import it.unimol.newunimol.attendance_management.service.AttendanceService;
 import it.unimol.newunimol.attendance_management.DTO.AttendanceUpdateDTO;
 import it.unimol.newunimol.attendance_management.service.TokenJWTService;
@@ -45,7 +45,7 @@ public class AttendanceController {
 
     // 1. Registrazione Presenza
     @PostMapping("/createAttendance")
-    public ResponseEntity<?> createAttendance(@RequestHeader("Authorization") String authHeader, @RequestBody presenza presenza) {
+    public ResponseEntity<?> createAttendance(@RequestHeader("Authorization") String authHeader, @RequestBody Presenza presenza) {
         String token = extractTokenFromHeader(authHeader);
         if (!tokenJWTService.hasRole(token, "DOCENTE")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Operazione consentita solo ai docenti");
