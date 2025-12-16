@@ -51,11 +51,23 @@ jobs:
           path: target/*.jar
           retention-days: 7
 
+  lint-docker:
+    name: Lint Dockerfile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+
   # Job per build immagine Docker
   docker:
     name: Build Docker Image
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, lint-docker]
     # if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'  # Temporaneamente disabilitato per test
 
     steps:
