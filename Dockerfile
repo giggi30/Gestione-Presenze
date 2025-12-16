@@ -19,8 +19,8 @@ FROM eclipse-temurin:17
 WORKDIR /app
 
 # Create non-root user for security (Debian-compatible)
-RUN groupadd --system spring || true \
-    && useradd --system --no-create-home --shell /bin/false --gid spring spring || true
+RUN groupadd --system spring || true; \
+    useradd --system --no-create-home --shell /bin/false --gid spring spring || true
 
 # Copy JAR from build stage as root, set ownership and permissions
 COPY --from=build /app/target/*.jar app.jar
