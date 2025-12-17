@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -22,6 +23,7 @@ public class EventPublisherService {
 
     private static final Logger logger = LoggerFactory.getLogger(EventPublisherService.class);
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "RabbitTemplate is a Spring singleton bean, safe to store")
     private final RabbitTemplate rabbitTemplate;
 
     @Value("${rabbitmq.exchange.attendance}")

@@ -5,7 +5,7 @@ Questa guida mostra i passaggi raccomandati per avviare e testare il microserviz
 ## Prerequisiti
 - Java 17
 - Maven (opzionale, perché è incluso lo script `./mvnw`)
-- Docker & Docker Compose (consigliato)
+- Docker & Docker Compose
 - Postman o curl per testare le API
 
 ---
@@ -13,6 +13,8 @@ Questa guida mostra i passaggi raccomandati per avviare e testare il microserviz
 ## 1) Quickstart consigliato (Docker)
 
 1. Avvia i servizi necessari con Docker Compose (MySQL + RabbitMQ):
+
+   Assicurati di avere un file `.env` configurato correttamente (puoi usare `.env.example` come base).
 
    ```bash
    docker-compose up -d
@@ -25,7 +27,7 @@ Questa guida mostra i passaggi raccomandati per avviare e testare il microserviz
    docker-compose ps
    ```
 
-Questo avvia un database MySQL (db: `newunimol`, user: `User`, password: `P@ssw0rd`) e RabbitMQ (guest/guest).
+Questo avvia un database MySQL e RabbitMQ utilizzando le credenziali definite nel file `.env`.
 
 ---
 
@@ -179,9 +181,26 @@ SELECT * FROM presenza;
 
 ---
 
-Se vuoi, procedo a:
-- aggiungere un file `docker-compose.override.yml` per personalizzazioni locali
-- creare il workflow GitHub Actions con build e test
-- aggiornare il README principale con un link a questa guida
+## 11) Generare e visualizzare il report di coverage (JaCoCo)
 
-Dimmi quale passo vuoi seguire.
+Per ottenere i test e visualizzare la coverage in modo user-friendly è disponibile lo script `show-coverage-test.sh` nella root del progetto. Lo script esegue i test, genera il report JaCoCo (`target/site/jacoco`) e avvia un semplice server HTTP che espone il sito generato.
+
+- macOS / Linux (consigliato):
+
+  Requisiti: `python3` (per il server statico) e `lsof` (per trovare una porta libera). Se usi Linux senza `open`, il link verrà stampato e puoi aprirlo manualmente con `xdg-open` o il tuo browser.
+
+  ```bash
+  chmod +x ./show-coverage-test.sh
+  ./show-coverage-test.sh
+  ```
+
+  Output tipico: lo script mostrerà l'URL (es. `http://localhost:8000/jacoco/index.html`) e aprirà il browser di default (su macOS). Il server rimane in background; per chiuderlo usa `kill <PID>` oppure interrompi il processo.
+
+- Linux senza `open` (se il browser non si apre automaticamente):
+
+  Dopo l'esecuzione dello script apri manualmente l'URL stampato, oppure usa:
+  ```bash
+  xdg-open "http://localhost:8000/jacoco/index.html"
+  ```
+
+

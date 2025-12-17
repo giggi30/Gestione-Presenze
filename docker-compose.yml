@@ -3,12 +3,13 @@ services:
     image: mysql:8.0
     container_name: newunimol-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: newunimol
-      MYSQL_USER: User
-      MYSQL_PASSWORD: P@ssw0rd
-    ports:
-      - "3306:3306"
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    #non serve esporre la porta del database all'esterno
+    # ports:
+    #   - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -21,8 +22,8 @@ services:
     image: rabbitmq:3-management
     container_name: newunimol-rabbitmq
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     ports:
       - "5672:5672"   # AMQP protocol
       - "15672:15672" # Management UI
@@ -32,5 +33,43 @@ services:
       timeout: 5s
       retries: 5
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: newunimol-app:latest
+    container_name: newunimol-app
+    depends_on:    #assicura che mysql e rabbitmq siano avviati prima di app
+      - mysql
+      - rabbitmq
+    ports:
+      - "8080:8080"
+    environment:
+      # Spring Boot datasource and RabbitMQ settings pointing to the compose service names
+      SPRING_DATASOURCE_URL: jdbc:mysql://newunimol-mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_RABBITMQ_HOST: newunimol-rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    restart: on-failure
+    
+  # deploy:
+  #   replicas: 5
+  #   update_config:
+  #     parallelism: 2
+  #     delay: 10s
+  #   restart_policy:
+  #     condition: on-failure
+  #     max_attempts: 3
+  #     window: 60s
+
 volumes:
-  mysql_data:
+  mysql_data: {}
