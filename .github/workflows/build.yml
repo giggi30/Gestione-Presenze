@@ -2,9 +2,9 @@ name: Build & Test Attendance Management
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [ main, dev ]
   pull_request:
-    branches: [ main, master, develop ]
+    branches: [ main, dev ]
   workflow_dispatch:  # Permette esecuzione manuale
 
 jobs:
