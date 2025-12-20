@@ -26,16 +26,25 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Grant execute permission for mvnw
         run: chmod +x mvnw
 
-      - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v4
+      - name: Install Semantic Release and Plugins
+        run: |
+          npm install -g semantic-release \
+            @semantic-release/git \
+            @semantic-release/maven \
+            @semantic-release/exec \
+            @semantic-release/commit-analyzer \
+            @semantic-release/release-notes-generator \
+            @semantic-release/github
+
+      - name: Run Semantic Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          semantic_version: 19
-          extra_plugins: |
-            @semantic-release/git@10.0.1
-            @semantic-release/maven@12.1.1
-            @semantic-release/exec@6.0.3
+        run: npx semantic-release
