@@ -308,6 +308,19 @@ _Esempio per media corso:_
 
 ---
 
+## Qualità del Software e Testing
+
+### Code Coverage (70%)
+È stata impostata una soglia minima di **code coverage del 70%** per garantire un equilibrio ottimale tra affidabilità e manutenibilità. Questa soglia assicura che tutta la logica di business critica sia verificata, evitando al contempo test ridondanti su codice boilerplate (getter/setter).
+
+### Focus sui Service
+I test unitari si concentrano principalmente sul **Service Layer** perché:
+- **Business Logic:** È il cuore dell'applicazione dove risiedono le regole decisionali.
+- **Orchestrazione:** Gestisce l'interazione tra repository, DTO e pubblicazione di eventi.
+- **Isolamento:** Permette di verificare il comportamento del sistema in modo rapido e deterministico tramite l'uso di Mock.
+
+---
+
 ## Note
 
 - Le statistiche sono utili per il monitoraggio dell'assiduità.
