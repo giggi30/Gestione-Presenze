@@ -25,6 +25,7 @@ jobs:
           dry_run: true
           default_bump: patch
           release_branches: main
+          custom_release_rules: "feat:minor,fix:patch,major:major,BREAKING CHANGE:major"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
