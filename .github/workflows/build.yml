@@ -38,11 +38,11 @@ jobs:
       - name: Grant execute permission for mvnw
         run: chmod +x mvnw
 
-      - name: Build with Maven
+      - name: Build and Lint with Maven
         run: ./mvnw clean package -DskipTests
 
-      - name: Run tests
-        run: ./mvnw test
+      - name: Run Tests and Check Coverage
+        run: ./mvnw test jacoco:check
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
