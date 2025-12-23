@@ -62,3 +62,62 @@ jobs:
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: Dockerfile
+
+  test-swarm:
+    name: Test Swarm Deployment
+    runs-on: ubuntu-latest
+    needs: [build, lint-docker]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: docker build -t newunimol-app:latest .
+
+      - name: Initialize Swarm
+        run: docker swarm init
+
+      - name: Create Dummy Secrets & Configs
+        run: |
+          # Secrets
+          printf "root_password" | docker secret create mysql_root_password -
+          printf "db_password" | docker secret create db_password -
+          printf "guest" | docker secret create rabbitmq_password -
+          printf "dummy_private_key" | docker secret create jwt_private_key -
+          printf "dummy_public_key" | docker secret create jwt_public_key -
+          printf "3600000" | docker secret create jwt_expiration -
+          
+          # Configs
+          printf "newunimol_user" | docker config create db_username -
+          printf "newunimol_db" | docker config create mysql_database -
+          printf "guest" | docker config create rabbitmq_username -
+          printf "/" | docker config create rabbitmq_vhost -
+
+      - name: Deploy Stack
+        run: docker stack deploy -c docker-compose.yml test_stack
+
+      - name: Wait for Services
+        run: |
+          echo "Waiting for services to start..."
+          sleep 60
+          docker service ls
+          docker stack ps test_stack --no-trunc
+
+      - name: Verify Services
+        run: |
+          # Check if any service has 0 replicas running
+          if [ $(docker service ls --format "{{.Replicas}}" | grep "0/" | wc -l) -gt 0 ]; then
+            echo "Some services failed to start!"
+            docker service ls
+            docker stack ps test_stack --no-trunc
+            
+            # Print logs for failed services
+            for service in $(docker service ls --format "{{.Name}}"); do
+              echo "Logs for $service:"
+              docker service logs --tail 50 $service
+            done
+            
+            exit 1
+          else
+            echo "All services started successfully."
+          fi

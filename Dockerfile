@@ -24,7 +24,9 @@ RUN groupadd --system spring || true; \
 
 # Copy JAR from build stage as root, set ownership and permissions
 COPY --from=build /app/target/*.jar app.jar
-RUN chown spring:spring /app/app.jar && chmod 755 /app/app.jar
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chown spring:spring /app/app.jar /app/docker-entrypoint.sh && \
+    chmod 755 /app/app.jar /app/docker-entrypoint.sh
 
 # Switch to non-root user
 USER spring:spring
@@ -36,5 +38,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
   CMD wget -q --spider http://localhost:8080/actuator/health || exit 1
 
-# Run application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run application via entrypoint script
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
