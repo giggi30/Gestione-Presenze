@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - app-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - app-network
+
+  app:
+    image: newunimol-app:1.1.0
+    depends_on:
+      - mysql
+      - rabbitmq
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: overlay
+
+volumes:
+  mysql_data:
