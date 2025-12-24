@@ -204,3 +204,54 @@ Per ottenere i test e visualizzare la coverage in modo user-friendly è disponib
   ```
 
 
+
+---
+
+## 12) Guida Docker Swarm (Deploy e Test)
+
+Questa sezione descrive come avviare l'intero stack (App + MySQL + RabbitMQ) in modalità Docker Swarm.
+
+### 1. Inizializzazione Swarm
+Se non hai già inizializzato lo swarm:
+```bash
+docker swarm init
+```
+
+### 2. Build dell'immagine
+Poiché lo stack usa l'immagine `newunimol-app:latest`, devi costruirla localmente (o pusharla su un registry se usi più nodi):
+```bash
+docker build -t newunimol-app:latest .
+```
+
+### 3. Creazione Secrets e Configs
+Lo stack richiede secrets e configs per le password e le variabili sensibili. Assicurati di avere il file `.env` (vedi punto 8) e lancia lo script:
+```bash
+chmod +x init-swarm-secrets.sh
+./init-swarm-secrets.sh
+```
+
+### 4. Deploy dello Stack
+Lancia lo stack con il nome `newunimol`:
+```bash
+docker stack deploy -c docker-compose.yml newunimol
+```
+
+### 5. Verifica e Test
+- Controlla lo stato dei servizi:
+  ```bash
+  docker service ls
+  docker service ps newunimol_app
+  ```
+- Attendi che tutti i servizi abbiano repliche attive (es. 3/3 per l'app).
+- L'applicazione è esposta sulla porta **8080**. Puoi testarla come descritto al punto 3:
+  ```bash
+  curl http://localhost:8080/api/test
+  ```
+
+### 6. Rimozione dello Stack
+Per fermare e rimuovere tutto:
+```bash
+docker stack rm newunimol
+# Opzionale: lasciare lo swarm
+# docker swarm leave --force
+```
