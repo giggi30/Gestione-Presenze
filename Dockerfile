@@ -22,8 +22,6 @@ WORKDIR /app
 RUN groupadd --system spring || true; \
   useradd --system --no-create-home --shell /bin/false --gid spring spring || true
 
-# Install netcat for health checks
-RUN apt-get update && apt-get install -y --no-install-recommends netcat-openbsd && rm -rf /var/lib/apt/lists/*
 
 # Copy JAR from build stage as root, set ownership and permissions
 COPY --from=build /app/target/*.jar app.jar
