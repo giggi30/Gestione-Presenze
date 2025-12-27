@@ -12,37 +12,54 @@ Questa guida mostra i passaggi raccomandati per avviare e testare il microserviz
 
 ## 1) Quickstart consigliato (Docker Swarm)
 
-Il progetto è configurato per l'esecuzione su **Docker Swarm**.
+Il progetto è configurato per l'esecuzione su **Docker Swarm**. Segui questo ordine preciso:
 
-1. **Inizializza Swarm** (se non fatto in precedenza):
+### A) Configurazione Ambiente
+1. **Crea il file `.env`**:
+   Copia il file `.env.example` in un nuovo file chiamato `.env`.
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Genera le chiavi JWT**:
+   L'applicazione richiede una coppia di chiavi RSA in formato Base64. Generale con lo script incluso:
+   ```bash
+   chmod +x generate_jwt_keys.sh
+   ./generate_jwt_keys.sh
+   ```
+   Copia le chiavi stampate a video e incollale nel file `.env` (sostituendo i valori di `JWT_PRIVATE_KEY` e `JWT_PUBLIC_KEY`).
+
+### B) Preparazione Docker
+3. **Inizializza Swarm** (se non fatto in precedenza):
    ```bash
    docker swarm init
    ```
 
-2. **Costruisci l'immagine dell'applicazione**:
+4. **Costruisci l'immagine**:
    ```bash
    docker build -t newunimol-app:latest .
    ```
 
-3. **Crea i Secret e le Config**:
-   Assicurati di avere il file `.env` configurato (vedi `.env.example`).
+### C) Avvio dello Stack
+5. **Inizializza i Secret e le Config**:
+   Questo script caricherà i valori del tuo `.env` dentro Docker Swarm:
    ```bash
    chmod +x init-swarm-secrets.sh
    ./init-swarm-secrets.sh
    ```
 
-4. **Avvia lo Stack**:
+6. **Avvia lo Stack**:
    ```bash
    docker stack deploy -c docker-compose.yml newunimol
    ```
 
-5. **Verifica lo stato**:
+7. **Verifica lo stato**:
    ```bash
-   docker stack ps newunimol
-   # oppure
    docker service ls
    ```
    Attendi che il servizio `newunimol_app` abbia repliche attive (es. 3/3).
+   
+   > **Nota Importante:** Al primo avvio, MySQL può impiegare **30-60 secondi** per inizializzarsi completamente. Se le API restituiscono errore 500 appena dopo il deploy, attendi un minuto e riprova.
 
 Questo avvia l'intero stack (App, MySQL, RabbitMQ) utilizzando i secret e le configurazioni definite.
 
@@ -113,14 +130,14 @@ Per semplicità il microservizio include endpoint per generare token di prova.
 
 Base path: `/api`
 
-- GET  `/api/test` — endpoint di test, risponde con stringa semplice
-- POST `/api/token/generate` — genera token JWT di test
-- GET  `/api/token/validate` — valida token dal header
-- POST `/api/createAttendance` — crea una presenza (richiede header Authorization)
-- PUT  `/api/updateAttendance/{attendanceId}` — aggiorna una presenza
-- DELETE `/api/deleteAttendance/{attendanceId}` — elimina una presenza
-- GET  `/api/getStudentAttendances/{studentId}` — presenze di uno studente
-- GET  `/api/getAttendance/{attendanceId}` — presenza tramite ID
+- GET  `http://localhost:8080/api/test` — endpoint di test, risponde con stringa semplice
+- POST `http://localhost:8080/api/token/generate` — genera token JWT di test
+- GET  `http://localhost:8080/api/token/validate` — valida token dal header
+- POST `http://localhost:8080/api/createAttendance` — crea una presenza (richiede header Authorization)
+- PUT  `http://localhost:8080/api/updateAttendance/{attendanceId}` — aggiorna una presenza
+- DELETE `http://localhost:8080/api/deleteAttendance/{attendanceId}` — elimina una presenza
+- GET  `http://localhost:8080/api/getStudentAttendances/{studentId}` — presenze di uno studente
+- GET  `http://localhost:8080/api/getAttendance/{attendanceId}` — presenza tramite ID
 
 Tutte le chiamate protette richiedono l'header:
 
@@ -168,22 +185,30 @@ Ruoli (per i test):
 
 ---
 
-Poiché nella configurazione Swarm la porta 3306 non è esposta di default all'host, puoi verificare i dati accedendo direttamente al container:
+## 7) Accesso diretto al Database (MySQL)
 
-```bash
-# Trova il container ID del database
-docker ps --filter "name=newunimol_mysql"
+Poiché nella configurazione Swarm la porta 3306 non è esposta di default all'host, puoi verificare i dati accedendo direttamente al container.
 
-# Accedi alla shell MySQL (sostituisci <container_id> con l'ID reale)
-docker exec -it <container_id> mysql -uUser -pP@ssw0rd newunimol
-```
+1. **Trova l'ID del container MySQL**:
+   ```bash
+   docker ps --filter "name=newunimol_mysql"
+   ```
+   Copia il **CONTAINER ID** (es. `a1b2c3d4...`).
 
-Una volta dentro la shell MySQL:
-```sql
-```sql
-USE newunimol;
-SELECT * FROM presenza;
-```
+2. **Accedi alla shell MySQL**:
+   Sostituisci `<ID_CONTAINER>` con l'ID trovato e usa l'username definito nel tuo file `.env`.
+   ```bash
+   docker exec -it <ID_CONTAINER> mysql -u <TUO_DB_USERNAME> -p
+   ```
+   Quando richiesto, inserisci la password definita nel `.env`.
+
+3. **Esegui query SQL**:
+   Una volta dentro la shell MySQL:
+   ```sql
+   USE newunimol;
+   SHOW TABLES;
+   SELECT * FROM presenze;
+   ```
 
 ---
 
@@ -226,5 +251,44 @@ Per ottenere i test e visualizzare la coverage in modo user-friendly è disponib
   ```
 
 ---
+## 11) Arresto e Pulizia (Reset)
+
+Quando hai finito di testare, puoi fermare tutto e pulire l'ambiente.
+
+1. **Fermare lo stack**:
+   ```bash
+   docker stack rm newunimol
+   ```
+
+2. **Pulizia completa (Opzionale)**:
+   Se vuoi rimuovere anche i dati del database e i secret (per ripartire da zero o cambiare credenziali), esegui:
+   ```bash
+   # Rimuove i secret e le config
+   docker secret rm db_password mysql_root_password rabbitmq_password jwt_private_key jwt_public_key jwt_expiration
+   docker config rm db_username mysql_database rabbitmq_username rabbitmq_vhost
+   
+   # Rimuove il volume dei dati (ATTENZIONE: perdi i dati salvati!)
+   docker volume rm newunimol_mysql_data
+   ```
+
+## 12) Guida Avanzata: Aggiornamento Credenziali Database
+
+Se hai già avviato lo stack e vuoi cambiare le credenziali (username/password) nel file `.env`, devi seguire questa procedura perché Docker Swarm memorizza i segreti in modo permanente.
+
+1. **Ferma e Pulisci**:
+   Esegui i comandi di pulizia descritti nella **Sezione 11** (rimozione stack, secret, config e volume).
+
+2. **Aggiorna `.env`**:
+   Modifica `DB_USERNAME` e `DB_PASSWORD` nel tuo file `.env`.
+
+3. **Rigenera i Segreti**:
+   ```bash
+   ./init-swarm-secrets.sh
+   ```
+
+4. **Riavvia**:
+   ```bash
+   docker stack deploy -c docker-compose.yml newunimol
+   ```
 
 
