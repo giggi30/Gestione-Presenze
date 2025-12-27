@@ -20,13 +20,16 @@ WORKDIR /app
 
 # Create non-root user for security (Debian-compatible)
 RUN groupadd --system spring || true; \
-    useradd --system --no-create-home --shell /bin/false --gid spring spring || true
+  useradd --system --no-create-home --shell /bin/false --gid spring spring || true
+
+# Install netcat for health checks
+RUN apt-get update && apt-get install -y --no-install-recommends netcat-openbsd && rm -rf /var/lib/apt/lists/*
 
 # Copy JAR from build stage as root, set ownership and permissions
 COPY --from=build /app/target/*.jar app.jar
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chown spring:spring /app/app.jar /app/docker-entrypoint.sh && \
-    chmod 755 /app/app.jar /app/docker-entrypoint.sh
+  chmod 755 /app/app.jar /app/docker-entrypoint.sh
 
 # Switch to non-root user
 USER spring:spring

@@ -30,3 +30,6 @@ logs/
 # Application properties with secrets
 application-local.properties
 .env
+
+#script
+reset-db.sh

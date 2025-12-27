@@ -1,65 +1,137 @@
-version: '3.8'
-
 services:
   mysql:
     image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+    configs:
+      - source: mysql_database
+        target: /tmp/mysql_database
+      - source: db_username
+        target: /tmp/db_username
+    secrets:
+      - mysql_root_password
+      - db_password
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        export MYSQL_DATABASE=$$(cat /tmp/mysql_database)
+        export MYSQL_USER=$$(cat /tmp/db_username)
+        export MYSQL_ROOT_PASSWORD=$$(cat /run/secrets/mysql_root_password)
+        export MYSQL_PASSWORD=$$(cat /run/secrets/db_password)
+        exec docker-entrypoint.sh mysqld
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - newunimol-net
     deploy:
       replicas: 1
       restart_policy:
         condition: on-failure
-    networks:
-      - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:3-management
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    configs:
+      - source: rabbitmq_username
+        target: /tmp/rabbitmq_username
+      - source: rabbitmq_vhost
+        target: /tmp/rabbitmq_vhost
+    secrets:
+      - source: rabbitmq_password
+        target: rabbitmq_password
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        export RABBITMQ_DEFAULT_USER=$$(cat /tmp/rabbitmq_username)
+        export RABBITMQ_DEFAULT_PASS=$$(cat /run/secrets/rabbitmq_password)
+        export RABBITMQ_DEFAULT_VHOST=$$(cat /tmp/rabbitmq_vhost)
+        exec docker-entrypoint.sh rabbitmq-server
     ports:
       - "5672:5672"
       - "15672:15672"
+    networks:
+      - newunimol-net
     deploy:
       replicas: 1
       restart_policy:
         condition: on-failure
-    networks:
-      - app-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   app:
-    image: newunimol-app:1.1.0
+    image: newunimol-app:latest
     depends_on:
       - mysql
       - rabbitmq
     ports:
       - "8080:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
-      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    configs:
+      - source: db_username
+        target: /run/configs/db_username
+      - source: mysql_database
+        target: /run/configs/mysql_database
+      - source: rabbitmq_username
+        target: /run/configs/rabbitmq_username
+      - source: rabbitmq_vhost
+        target: /run/configs/rabbitmq_vhost
+    secrets:
+      - db_password
+      - rabbitmq_password
+      - jwt_private_key
+      - jwt_public_key
+      - jwt_expiration
+    networks:
+      - newunimol-net
     deploy:
       replicas: 3
       update_config:
-        parallelism: 1
+        parallelism: 2
         delay: 10s
       restart_policy:
         condition: on-failure
-    networks:
-      - app-network
+        delay: 10s
+        max_attempts: 5
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
 
-networks:
-  app-network:
-    driver: overlay
+configs:
+  db_username:
+    external: true
+  mysql_database:
+    external: true
+  rabbitmq_username:
+    external: true
+  rabbitmq_vhost:
+    external: true
+
+secrets:
+  mysql_root_password:
+    external: true
+  db_password:
+    external: true
+  rabbitmq_password:
+    external: true
+  jwt_private_key:
+    external: true
+  jwt_public_key:
+    external: true
+  jwt_expiration:
+    external: true
 
 volumes:
   mysql_data:
+
+networks:
+  newunimol-net:
+    driver: overlay

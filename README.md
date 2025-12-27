@@ -326,3 +326,5 @@ I test unitari si concentrano principalmente sul **Service Layer** perché:
 - Le statistiche sono utili per il monitoraggio dell'assiduità.
 - L'API segue le convenzioni REST e usa Swagger per la documentazione.
 - Gli ID delle presenze sono generati automaticamente come stringhe UUID.
+
+---

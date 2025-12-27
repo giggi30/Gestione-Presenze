@@ -10,28 +10,47 @@ Questa guida mostra i passaggi raccomandati per avviare e testare il microserviz
 
 ---
 
-## 1) Quickstart consigliato (Docker)
+## 1) Quickstart consigliato (Docker Swarm)
 
-1. Avvia i servizi necessari con Docker Compose (MySQL + RabbitMQ):
+Il progetto è configurato per l'esecuzione su **Docker Swarm**.
 
-   Assicurati di avere un file `.env` configurato correttamente (puoi usare `.env.example` come base).
-
+1. **Inizializza Swarm** (se non fatto in precedenza):
    ```bash
-   docker-compose up -d
+   docker swarm init
    ```
 
-2. Verifica che i container siano "Up" e "healthy":
-
+2. **Costruisci l'immagine dell'applicazione**:
    ```bash
-   docker ps
-   docker-compose ps
+   docker build -t newunimol-app:latest .
    ```
 
-Questo avvia un database MySQL e RabbitMQ utilizzando le credenziali definite nel file `.env`.
+3. **Crea i Secret e le Config**:
+   Assicurati di avere il file `.env` configurato (vedi `.env.example`).
+   ```bash
+   chmod +x init-swarm-secrets.sh
+   ./init-swarm-secrets.sh
+   ```
+
+4. **Avvia lo Stack**:
+   ```bash
+   docker stack deploy -c docker-compose.yml newunimol
+   ```
+
+5. **Verifica lo stato**:
+   ```bash
+   docker stack ps newunimol
+   # oppure
+   docker service ls
+   ```
+   Attendi che il servizio `newunimol_app` abbia repliche attive (es. 3/3).
+
+Questo avvia l'intero stack (App, MySQL, RabbitMQ) utilizzando i secret e le configurazioni definite.
 
 ---
 
 ## 2) Avvio dell'applicazione (locale)
+
+> **Nota:** Se lo stack Docker Swarm è attivo, la porta 8080 sarà occupata. Esegui `docker stack rm newunimol` per liberarla prima di avviare l'app in locale.
 
 Nella cartella del progetto esegui:
 
@@ -149,10 +168,18 @@ Ruoli (per i test):
 
 ---
 
-## 7) Verifica del database
+Poiché nella configurazione Swarm la porta 3306 non è esposta di default all'host, puoi verificare i dati accedendo direttamente al container:
 
-Apri MySQL Workbench o usa il client MySQL e verifica i dati:
+```bash
+# Trova il container ID del database
+docker ps --filter "name=newunimol_mysql"
 
+# Accedi alla shell MySQL (sostituisci <container_id> con l'ID reale)
+docker exec -it <container_id> mysql -uUser -pP@ssw0rd newunimol
+```
+
+Una volta dentro la shell MySQL:
+```sql
 ```sql
 USE newunimol;
 SELECT * FROM presenza;
@@ -175,13 +202,8 @@ SELECT * FROM presenza;
 
 ---
 
-## 10) Pipeline e CI (sintesi)
 
-- Si consiglia di aggiungere un workflow GitHub Actions che esegua `./mvnw -B package` e i test su push/pull request.
-
----
-
-## 11) Generare e visualizzare il report di coverage (JaCoCo)
+## 10) Generare e visualizzare il report di coverage (JaCoCo)
 
 Per ottenere i test e visualizzare la coverage in modo user-friendly è disponibile lo script `show-coverage-test.sh` nella root del progetto. Lo script esegue i test, genera il report JaCoCo (`target/site/jacoco`) e avvia un semplice server HTTP che espone il sito generato.
 
@@ -203,55 +225,6 @@ Per ottenere i test e visualizzare la coverage in modo user-friendly è disponib
   xdg-open "http://localhost:8000/jacoco/index.html"
   ```
 
-
-
 ---
 
-## 12) Guida Docker Swarm (Deploy e Test)
 
-Questa sezione descrive come avviare l'intero stack (App + MySQL + RabbitMQ) in modalità Docker Swarm.
-
-### 1. Inizializzazione Swarm
-Se non hai già inizializzato lo swarm:
-```bash
-docker swarm init
-```
-
-### 2. Build dell'immagine
-Poiché lo stack usa l'immagine `newunimol-app:latest`, devi costruirla localmente (o pusharla su un registry se usi più nodi):
-```bash
-docker build -t newunimol-app:latest .
-```
-
-### 3. Creazione Secrets e Configs
-Lo stack richiede secrets e configs per le password e le variabili sensibili. Assicurati di avere il file `.env` (vedi punto 8) e lancia lo script:
-```bash
-chmod +x init-swarm-secrets.sh
-./init-swarm-secrets.sh
-```
-
-### 4. Deploy dello Stack
-Lancia lo stack con il nome `newunimol`:
-```bash
-docker stack deploy -c docker-compose.yml newunimol
-```
-
-### 5. Verifica e Test
-- Controlla lo stato dei servizi:
-  ```bash
-  docker service ls
-  docker service ps newunimol_app
-  ```
-- Attendi che tutti i servizi abbiano repliche attive (es. 3/3 per l'app).
-- L'applicazione è esposta sulla porta **8080**. Puoi testarla come descritto al punto 3:
-  ```bash
-  curl http://localhost:8080/api/test
-  ```
-
-### 6. Rimozione dello Stack
-Per fermare e rimuovere tutto:
-```bash
-docker stack rm newunimol
-# Opzionale: lasciare lo swarm
-# docker swarm leave --force
-```
