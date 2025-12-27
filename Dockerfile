@@ -18,6 +18,10 @@ RUN ./mvnw package -DskipTests -B
 FROM eclipse-temurin:17
 WORKDIR /app
 
+# Install netcat and wget
+#hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends netcat-openbsd wget && rm -rf /var/lib/apt/lists/*
+
 # Create non-root user for security (Debian-compatible)
 RUN groupadd --system spring || true; \
   useradd --system --no-create-home --shell /bin/false --gid spring spring || true

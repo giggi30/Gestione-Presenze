@@ -1,5 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 set -e
+set -x
 
 # Read configs from files and export as environment variables
 if [ -f /run/configs/db_username ]; then
