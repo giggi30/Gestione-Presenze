@@ -185,9 +185,20 @@ Ruoli (per i test):
 
 ---
 
-## 7) Accesso diretto al Database (MySQL)
+## 7) Accesso al Database (MySQL)
 
-Poiché nella configurazione Swarm la porta 3306 non è esposta di default all'host, puoi verificare i dati accedendo direttamente al container.
+Il database è accessibile sia tramite terminale (dentro il container) sia tramite client esterni (es. MySQL Workbench), poiché la porta è esposta su **3307** (per evitare conflitti con eventuali MySQL locali sulla 3306).
+
+### A) Accesso tramite Client Esterno (MySQL Workbench, DBeaver)
+Configura la connessione con questi parametri:
+- **Hostname**: `127.0.0.1` (o `localhost`)
+- **Port**: `3307`
+- **Username**: Quello definito nel `.env` (es. `your_db_username`)
+- **Password**: Quella definita nel `.env` (es. `your_db_password`)
+- **Default Schema**: `newunimol`
+
+### B) Accesso tramite Terminale (Docker Exec)
+Se preferisci la riga di comando senza installare client:
 
 1. **Trova l'ID del container MySQL**:
    ```bash

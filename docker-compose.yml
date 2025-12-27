@@ -20,6 +20,8 @@ services:
         exec docker-entrypoint.sh mysqld
     volumes:
       - mysql_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
     networks:
       - newunimol-net
     deploy:
