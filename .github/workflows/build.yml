@@ -38,7 +38,7 @@ jobs:
       - name: Grant execute permission for mvnw
         run: chmod +x mvnw
 
-      - name: Build and Lint with Maven
+      - name: Build and Lint with Maven (checkstyle & spotbugs)
         run: ./mvnw clean package -DskipTests
 
       - name: Run Tests and Check Coverage
