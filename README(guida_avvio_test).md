@@ -301,5 +301,3 @@ Se hai già avviato lo stack e vuoi cambiare le credenziali (username/password) 
    ```bash
    docker stack deploy -c docker-compose.yml newunimol
    ```
-
-

@@ -1,3 +1,4 @@
+#da usare solo in produzione, perchè non espone il database al pubblico
 services:
   mysql:
     image: mysql:8.0
