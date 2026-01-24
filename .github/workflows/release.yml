@@ -1,4 +1,4 @@
-name: Create Release on Version Update
+name: Create Release on Semantic Version Update
 
 on:
   push:
@@ -12,7 +12,7 @@ on:
 
 jobs:
   create-release:
-    if: contains(github.event.head_commit.message, 'update') || contains(github.event.head_commit.message, 'Update') || github.event_name == 'workflow_dispatch'
+    if: "contains(github.event.head_commit.message, 'fix:') || contains(github.event.head_commit.message, 'feat:') || contains(github.event.head_commit.message, 'major:') || github.event_name == 'workflow_dispatch'"
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -20,6 +20,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -28,37 +30,73 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Extract Version from Commit Message
+    - name: Determine Next Version
       id: get_version
       run: |
         if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
           VERSION="${{ github.event.inputs.version }}"
           echo "Manual trigger version: $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
         else
+          # Get latest tag, default to v0.0.0 if none
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Last tag: $LAST_TAG"
+          
+          # Remove 'v' prefix
+          VERSION_NO_V=${LAST_TAG#v}
+          
+          # Split into parts
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_NO_V"
+          
           COMMIT_MSG="${{ github.event.head_commit.message }}"
           echo "Commit message: $COMMIT_MSG"
-          # Estrae la versione (es. 1.2.3) dal messaggio
-          VERSION=$(echo "$COMMIT_MSG" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+          
+          # Convert to lowercase for comparison
+          MSG_LOWER=$(echo "$COMMIT_MSG" | tr '[:upper:]' '[:lower:]')
+          
+          if [[ "$MSG_LOWER" == *"major:"* ]]; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+          elif [[ "$MSG_LOWER" == *"feat:"* ]]; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+          elif [[ "$MSG_LOWER" == *"fix:"* ]]; then
+            PATCH=$((PATCH + 1))
+          else
+            echo "No version keyword found (should be filtered by job if condition), skipping."
+            echo "VERSION=" >> $GITHUB_ENV
+            exit 0
+          fi
+          
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "New version: $NEW_VERSION"
+          echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
         fi
-        
-        if [ -z "$VERSION" ]; then
-          echo "Error: No version number (x.y.z) found."
-          exit 1
+
+    - name: Update pom.xml version
+      if: env.VERSION != ''
+      run: |
+        # Ensure versions-maven-plugin is available or just run it
+        if ./mvnw help:describe -Dplugin=org.codehaus.mojo:versions-maven-plugin > /dev/null 2>&1; then
+           ./mvnw versions:set -DnewVersion=${{ env.VERSION }} -DgenerateBackupPoms=false
+        else
+           # Fallback if plugin fails (unlikely) or just force it
+           ./mvnw org.codehaus.mojo:versions-maven-plugin:2.16.2:set -DnewVersion=${{ env.VERSION }} -DgenerateBackupPoms=false
         fi
-        
-        echo "Detected version: $VERSION"
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
 
     - name: Build with Maven
+      if: env.VERSION != ''
       run: chmod +x mvnw && ./mvnw clean package -DskipTests
 
     - name: Create GitHub Release
+      if: env.VERSION != ''
       uses: softprops/action-gh-release@v1
       with:
         tag_name: v${{ env.VERSION }}
         name: Release v${{ env.VERSION }}
         body: |
-          Automated release triggered by version update.
+          Automated release based on semantic versioning.
           
           **Version**: ${{ env.VERSION }}
           **Commit**: ${{ github.sha }}
