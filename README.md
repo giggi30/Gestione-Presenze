@@ -1,5 +1,13 @@
 # Attendance Management Microservice API
 
+[![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.java.com/)
+[![Spring Boot](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)](https://spring.io/projects/spring-boot)
+[![MySQL](https://img.shields.io/badge/mysql-%234479A1.svg?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Docker](https://img.shields.io/badge/docker-%232496ED.svg?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/features/actions)
+[![RabbitMQ](https://img.shields.io/badge/RabbitMQ-%23FF6600.svg?style=for-the-badge&logo=rabbitmq&logoColor=white)](https://www.rabbitmq.com/)
+[![Build Status](https://github.com/giggi30/Gestione-Presenze/actions/workflows/build.yml/badge.svg)](https://github.com/giggi30/Gestione-Presenze/actions/workflows/build.yml)
+
 ## Descrizione
 
 Questo microservizio si occupa della registrazione, modifica, visualizzazione e analisi delle presenze degli studenti alle lezioni universitarie. È parte del sistema distribuito "NewUnimol" e comunica con altri microservizi come Course_Management, User_Roles_Management e Report_Management. Si può visionare il Progetto tramite Swagger scaricando il file 'attendance-management-stub.yaml', importandolo nel sito [SwaggerEditor] (https://editor.swagger.io/), oppure copiando il raw code di 'attendance-management-stub.yaml' e incollarlo su https://editor.swagger.io/.

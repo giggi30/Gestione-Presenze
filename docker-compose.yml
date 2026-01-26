@@ -94,7 +94,7 @@ services:
     deploy:
       replicas: 3
       update_config:
-        parallelism: 2
+        parallelism: 2  #2 repliche di app si aggiornano andando in down mentre una rimane up
         delay: 10s
       restart_policy:
         condition: on-failure
